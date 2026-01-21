@@ -758,7 +758,7 @@
         </div>
 
         <div style="text-align: center; margin-top: 16px; font-size: 10px; opacity: 0.4; color: var(--text-secondary);">
-            v2.2 - Debug Mode
+            v2.3 - Auto CORS Fallback
         </div>
     </div>
 
@@ -771,6 +771,8 @@
         let analyser = null;
         let dataArray = null;
         let animationFrameId = null;
+        let zeroFrameCount = 0; // Track frames with zero audio data
+        let useFallbackMode = false; // Force fallback if CORS blocks audio
 
         const stationCards = document.querySelectorAll('.station-card');
         const stopBtn = document.getElementById('stopBtn');
@@ -1315,9 +1317,17 @@
             console.log('   - audio exists:', !!audio);
             console.log('   - audio.src:', audio?.src);
             console.log('   - audio.paused:', audio?.paused);
+            console.log('   - useFallbackMode:', useFallbackMode);
 
             if (!audio || !audio.src) {
                 console.warn('⚠️ Cannot setup visualization: no audio or no src');
+                return;
+            }
+
+            // If we've already detected CORS blocking, skip Web Audio API
+            if (useFallbackMode) {
+                console.log('🌊 Using fallback mode (CORS detected previously)');
+                visualizeFallback();
                 return;
             }
 
@@ -1344,13 +1354,16 @@
                 }
 
                 console.log('✅ Audio visualization: Real-time audio analysis active');
+                console.log('📊 Monitoring for CORS blocking (will auto-switch to fallback if detected)...');
+                zeroFrameCount = 0; // Reset counter
                 visualize();
                 return;
             } catch (err) {
                 // CORS blocks audio analysis for cross-origin streams
-                console.log('⚠️ Audio visualization: CORS blocked, using simulated pulse effect');
+                console.log('⚠️ Audio visualization: CORS blocked at setup, using simulated pulse effect');
                 console.log('   Error name:', err.name);
                 console.log('   Error message:', err.message);
+                useFallbackMode = true;
             }
 
             // Fallback: Simulated rhythmic pulse effect
@@ -1364,8 +1377,6 @@
                 return;
             }
 
-            animationFrameId = requestAnimationFrame(visualize);
-
             analyser.getByteFrequencyData(dataArray);
 
             let sum = 0;
@@ -1375,6 +1386,32 @@
             }
             const average = sum / focusRange;
 
+            // Detect if CORS is blocking audio data (all zeros)
+            if (average === 0) {
+                zeroFrameCount++;
+
+                // After 30 frames (~0.5 seconds) of zeros, switch to fallback
+                if (zeroFrameCount >= 30 && !useFallbackMode) {
+                    console.warn('🚫 CORS detected: 30 frames of zero audio data');
+                    console.log('🔄 Switching to fallback pulse mode...');
+                    useFallbackMode = true;
+
+                    // Cancel this animation loop
+                    if (animationFrameId) {
+                        cancelAnimationFrame(animationFrameId);
+                        animationFrameId = null;
+                    }
+
+                    // Start fallback mode
+                    visualizeFallback();
+                    return;
+                }
+            } else {
+                zeroFrameCount = 0; // Reset if we get actual data
+            }
+
+            animationFrameId = requestAnimationFrame(visualize);
+
             const intensity = 0.2 + (average / 255) * 0.6;
 
             const playerContainer = document.querySelector('.player-container');
@@ -1383,7 +1420,7 @@
 
                 // Log every 60 frames (approx 1 second)
                 if (Math.random() < 0.016) {
-                    console.log(`🎵 Real audio analysis - intensity: ${intensity.toFixed(2)}, avg: ${average.toFixed(0)}`);
+                    console.log(`🎵 Real audio analysis - intensity: ${intensity.toFixed(2)}, avg: ${average.toFixed(0)}, zeros: ${zeroFrameCount}`);
                 }
             }
         }
@@ -1442,6 +1479,12 @@
                 animationFrameId = null;
                 console.log('   ✅ Animation frame cancelled');
             }
+
+            // Reset fallback mode flag for next play
+            // (in case user switches to a stream without CORS issues)
+            useFallbackMode = false;
+            zeroFrameCount = 0;
+            console.log('   ✅ Fallback mode reset');
 
             const playerContainer = document.querySelector('.player-container');
             if (playerContainer) {
