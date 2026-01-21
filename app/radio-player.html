@@ -94,16 +94,16 @@
             --text-secondary: #a0aec0;
         }
 
-        /* Classic FM Brand Theme - Elegant Crimson */
+        /* Classic FM Brand Theme - Deep Crimson with Gold Accents */
         body.theme-classicfm {
-            background: linear-gradient(135deg, #1a0505 0%, #8B0000 30%, #DC143C 70%, #4A0E0E 100%);
-            --bg-primary: #1a0505;
-            --bg-secondary: #8B0000;
-            --bg-card: #DC143C;
+            background: linear-gradient(135deg, #0a0000 0%, #1a0000 30%, #2a0505 70%, #0a0000 100%);
+            --bg-primary: #0a0000;
+            --bg-secondary: #1a0000;
+            --bg-card: #2a0505;
             --accent-primary: #FFD700;
             --accent-secondary: #FFA500;
             --text-primary: #ffffff;
-            --text-secondary: #f0d9d9;
+            --text-secondary: #FFD700;
         }
 
         body.theme-classicfm::before {
@@ -136,12 +136,13 @@
             backdrop-filter: blur(30px) saturate(180%);
             border-radius: 32px;
             padding: 48px;
-            --glow-intensity: 0.3;
+            --glow-intensity: 0.5;
             box-shadow:
                 0 20px 60px rgba(0, 0, 0, 0.3),
                 0 0 0 1px var(--border-color),
-                0 0 40px rgba(139, 76, 246, var(--glow-intensity)),
-                0 0 80px rgba(139, 76, 246, calc(var(--glow-intensity) * 0.5)),
+                0 0 100px rgba(139, 76, 246, var(--glow-intensity)),
+                0 0 200px rgba(139, 76, 246, calc(var(--glow-intensity) * 0.7)),
+                0 0 350px rgba(139, 76, 246, calc(var(--glow-intensity) * 0.4)),
                 inset 0 1px 0 rgba(255, 255, 255, 0.05);
             max-width: 700px;
             width: 100%;
@@ -153,12 +154,13 @@
         }
 
         body.theme-classicfm .player-container {
-            background: rgba(26, 5, 5, 0.9);
+            background: rgba(42, 5, 5, 0.95);
             box-shadow:
                 0 30px 90px rgba(220, 20, 60, 0.4),
-                0 0 0 1px rgba(255, 215, 0, 0.2),
-                0 0 40px rgba(220, 20, 60, var(--glow-intensity)),
-                0 0 80px rgba(255, 215, 0, calc(var(--glow-intensity) * 0.4)),
+                0 0 0 1px rgba(255, 215, 0, 0.3),
+                0 0 100px rgba(220, 20, 60, calc(var(--glow-intensity) * 0.7)),
+                0 0 200px rgba(255, 215, 0, calc(var(--glow-intensity) * 0.6)),
+                0 0 350px rgba(220, 20, 60, calc(var(--glow-intensity) * 0.4)),
                 inset 0 1px 0 rgba(255, 215, 0, 0.1);
         }
 
@@ -167,8 +169,9 @@
             box-shadow:
                 0 30px 90px rgba(184, 255, 97, 0.2),
                 0 0 0 1px rgba(184, 255, 97, 0.3),
-                0 0 40px rgba(184, 255, 97, var(--glow-intensity)),
-                0 0 80px rgba(118, 227, 206, calc(var(--glow-intensity) * 0.5)),
+                0 0 100px rgba(184, 255, 97, var(--glow-intensity)),
+                0 0 200px rgba(118, 227, 206, calc(var(--glow-intensity) * 0.7)),
+                0 0 350px rgba(184, 255, 97, calc(var(--glow-intensity) * 0.4)),
                 inset 0 1px 0 rgba(184, 255, 97, 0.05);
             color: white;
         }
@@ -264,8 +267,8 @@
         }
 
         body.theme-classicfm .now-playing {
-            background: linear-gradient(135deg, rgba(220, 20, 60, 0.25) 0%, rgba(139, 0, 0, 0.25) 100%);
-            border-color: rgba(255, 215, 0, 0.2);
+            background: linear-gradient(135deg, rgba(220, 20, 60, 0.2) 0%, rgba(139, 0, 0, 0.15) 100%);
+            border-color: rgba(255, 215, 0, 0.3);
         }
 
         body.theme-reprezent .now-playing {
@@ -718,14 +721,14 @@
         <div class="station-grid">
             <button class="station-card" data-station="classicfm" data-url="https://media-ice.musicradio.com/ClassicFMMP3" data-name="Classic FM" data-tagline="The World's Greatest Music">
                 <div class="station-logo">
-                    <img src="https://upload.wikimedia.org/wikipedia/en/f/f8/Classic_FM_%28UK%29_logo.svg" alt="Classic FM" onerror="this.parentElement.innerHTML='<div style=\'font-size:32px;font-weight:900;color:#DC143C;\'>CLASSIC FM</div>'">
+                    <div style='font-size:32px;font-weight:900;color:#ffffff;'>CLASSIC FM</div>
                 </div>
                 <div class="station-name">Classic FM</div>
             </button>
 
             <button class="station-card" data-station="reprezent" data-url="https://radio.canstream.co.uk:8022/live.mp3" data-url-alt="http://radio.canstream.co.uk:8022/live.mp3" data-name="Reprezent 107.3 FM" data-tagline="Voice of Young London">
                 <div class="station-logo">
-                    <img src="https://www.reprezent.org.uk/_next/image?url=%2Flogo.png&w=256&q=75" alt="Reprezent Radio" onerror="this.parentElement.innerHTML='<div style=\'font-size:28px;font-weight:900;color:#B8FF61;\'>REPREZENT</div>'">
+                    <div style='font-size:28px;font-weight:900;color:#B8FF61;'>REPREZENT</div>
                 </div>
                 <div class="station-name">Reprezent 107.3</div>
             </button>
@@ -758,7 +761,7 @@
         </div>
 
         <div style="text-align: center; margin-top: 16px; font-size: 10px; opacity: 0.4; color: var(--text-secondary);">
-            v2.3 - Auto CORS Fallback
+            v2.7 - Refined Pulse + Play Fix
         </div>
     </div>
 
@@ -873,9 +876,9 @@
             tagline.textContent = stationTagline;
 
             if (stationId === 'classicfm') {
-                logoContainer.innerHTML = '<img src="https://upload.wikimedia.org/wikipedia/en/f/f8/Classic_FM_%28UK%29_logo.svg" alt="Classic FM" style="max-height: 85px;" onerror="this.outerHTML=\'<div style=\\\'font-size:40px;font-weight:900;color:#DC143C;\\\'>CLASSIC FM</div>\'">';
+                logoContainer.innerHTML = '<div style="font-size:40px;font-weight:900;color:#ffffff;">CLASSIC FM</div>';
             } else if (stationId === 'reprezent') {
-                logoContainer.innerHTML = '<img src="https://www.reprezent.org.uk/_next/image?url=%2Flogo.png&w=256&q=75" alt="Reprezent" style="max-height: 85px;" onerror="this.outerHTML=\'<div style=\\\'font-size:40px;font-weight:900;color:#B8FF61;\\\'>REPREZENT</div>\'">';
+                logoContainer.innerHTML = '<div style="font-size:40px;font-weight:900;color:#B8FF61;">REPREZENT</div>';
             }
         }
 
@@ -1050,23 +1053,25 @@
             updateStatus('Connecting...', true);
             console.log('🚀 Attempting to play audio...');
 
+            // Try to play - browsers require this to be within user gesture
             audio.play()
                 .then(() => {
-                    console.log('✅ audio.play() promise resolved - playback started');
+                    console.log('✅ Playback started successfully');
                 })
                 .catch((err) => {
-                    console.error('❌ audio.play() FAILED:', err);
-                    console.error('Error name:', err.name);
-                    console.error('Error message:', err.message);
+                    console.warn('⚠️ First play attempt failed:', err.name);
 
-                    if (err.name === 'NotAllowedError') {
-                        console.error('🚫 Autoplay blocked by browser. User interaction required.');
-                        updateStatus('Click again to play - Browser blocked autoplay');
-                    } else if (err.name === 'NotSupportedError') {
-                        console.error('🚫 Audio format not supported');
-                        updateStatus('Audio format not supported');
+                    // Immediate retry (still within user gesture window)
+                    if (err.name === 'NotAllowedError' || err.name === 'NotSupportedError') {
+                        console.log('🔄 Immediate retry...');
+                        audio.play()
+                            .then(() => console.log('✅ Retry successful'))
+                            .catch((retryErr) => {
+                                console.error('❌ Retry failed:', retryErr.name);
+                                updateStatus('Click station again to start');
+                            });
                     } else {
-                        updateStatus('Playback error - Click again');
+                        updateStatus('Connection error - Try again');
                     }
                 });
         }
@@ -1253,11 +1258,11 @@
                 let largeArtworkUrl = './assets/icons/icon-512.png';
 
                 if (currentStationId === 'classicfm') {
-                    artworkUrl = 'https://upload.wikimedia.org/wikipedia/en/f/f8/Classic_FM_%28UK%29_logo.svg';
-                    largeArtworkUrl = 'https://upload.wikimedia.org/wikipedia/en/f/f8/Classic_FM_%28UK%29_logo.svg';
+                    artworkUrl = './assets/icons/icon-192.png';
+                    largeArtworkUrl = './assets/icons/icon-512.png';
                 } else if (currentStationId === 'reprezent') {
-                    artworkUrl = 'https://www.reprezent.org.uk/_next/image?url=%2Flogo.png&w=256&q=75';
-                    largeArtworkUrl = 'https://www.reprezent.org.uk/_next/image?url=%2Flogo.png&w=256&q=75';
+                    artworkUrl = './assets/icons/icon-192.png';
+                    largeArtworkUrl = './assets/icons/icon-512.png';
                 }
 
                 navigator.mediaSession.metadata = new MediaMetadata({
@@ -1412,7 +1417,7 @@
 
             animationFrameId = requestAnimationFrame(visualize);
 
-            const intensity = 0.2 + (average / 255) * 0.6;
+            const intensity = 0.4 + (average / 255) * 1.4;
 
             const playerContainer = document.querySelector('.player-container');
             if (playerContainer) {
@@ -1443,16 +1448,32 @@
                 const elapsed = (Date.now() - startTime) / 1000;
 
                 // Create a rhythmic pulse pattern (simulates music beats)
-                // Combines multiple sine waves at different frequencies for natural feel
-                const beat1 = Math.sin(elapsed * 2.5) * 0.5 + 0.5;  // Main beat (2.5 Hz ~= 150 BPM)
-                const beat2 = Math.sin(elapsed * 1.25) * 0.3 + 0.3; // Secondary rhythm
-                const beat3 = Math.sin(elapsed * 5) * 0.2 + 0.2;    // Fast hi-hat simulation
+                // Different pulse patterns for different stations
+                let beat1, beat2, beat3, intensity;
 
-                // Combine for natural-feeling pulse
-                const combined = (beat1 * 0.5 + beat2 * 0.3 + beat3 * 0.2);
+                if (currentStationId === 'classicfm') {
+                    // Classic FM: Slower, more refined pulse for classical music
+                    beat1 = Math.sin(elapsed * 1.5) * 0.5 + 0.5;   // Slow main beat (1.5 Hz ~= 90 BPM)
+                    beat2 = Math.sin(elapsed * 0.75) * 0.3 + 0.3;  // Very slow secondary
+                    beat3 = Math.sin(elapsed * 3.0) * 0.2 + 0.2;   // Gentle shimmer
 
-                // Map to glow intensity (0.25 to 0.75 range)
-                const intensity = 0.25 + combined * 0.5;
+                    // Combine for elegant, refined pulse
+                    const combined = (beat1 * 0.5 + beat2 * 0.3 + beat3 * 0.2);
+
+                    // Gentler glow intensity (0.4 to 1.2 range for refined elegance)
+                    intensity = 0.4 + combined * 0.8;
+                } else {
+                    // Reprezent & others: Fast, energetic pulse
+                    beat1 = Math.sin(elapsed * 4.0) * 0.5 + 0.5;   // Fast main beat (4.0 Hz ~= 240 BPM)
+                    beat2 = Math.sin(elapsed * 2.0) * 0.3 + 0.3;   // Secondary rhythm
+                    beat3 = Math.sin(elapsed * 8.0) * 0.2 + 0.2;   // Very fast shimmer
+
+                    // Combine for natural-feeling pulse
+                    const combined = (beat1 * 0.5 + beat2 * 0.3 + beat3 * 0.2);
+
+                    // Dramatic glow intensity (0.3 to 2.2 range for energy)
+                    intensity = 0.3 + combined * 1.9;
+                }
 
                 const playerContainer = document.querySelector('.player-container');
                 if (playerContainer) {
@@ -1488,8 +1509,8 @@
 
             const playerContainer = document.querySelector('.player-container');
             if (playerContainer) {
-                playerContainer.style.setProperty('--glow-intensity', '0.3');
-                console.log('   ✅ Glow intensity reset to 0.3');
+                playerContainer.style.setProperty('--glow-intensity', '0.4');
+                console.log('   ✅ Glow intensity reset to 0.4');
             }
         }
     </script>
