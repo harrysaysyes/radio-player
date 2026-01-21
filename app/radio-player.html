@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Radio Player</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./manifest.json">
+
+    <!-- iOS Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Radio">
+    <link rel="apple-touch-icon" href="./assets/icons/icon-192.png">
+
+    <!-- Theme Colors -->
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="msapplication-TileColor" content="#2c3e50">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+            transition: background 0.6s ease;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            height: -webkit-fill-available;
+        }
+
+        /* Default/Neutral theme */
+        body.no-selection {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        }
+
+        /* Classic FM Theme */
+        body.theme-classicfm {
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 50%, #4A0E0E 100%);
+        }
+
+        /* Reprezent Theme */
+        body.theme-reprezent {
+            background: linear-gradient(135deg, #1F1E1E 0%, #0a0a0a 100%);
+        }
+
+        .player-container {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+            max-width: 600px;
+            width: 100%;
+            transition: all 0.6s ease;
+        }
+
+        body.theme-classicfm .player-container {
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        body.theme-reprezent .player-container {
+            background: rgba(31, 30, 30, 0.95);
+            color: white;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .logo-container {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-container img {
+            max-height: 70px;
+            max-width: 300px;
+            object-fit: contain;
+        }
+
+        .now-playing {
+            text-align: center;
+            padding: 25px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: all 0.6s ease;
+        }
+
+        body.no-selection .now-playing {
+            background: #f8f9fa;
+            color: #666;
+        }
+
+        body.theme-classicfm .now-playing {
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 100%);
+            color: white;
+        }
+
+        body.theme-reprezent .now-playing {
+            background: linear-gradient(135deg, #B8FF61 0%, #76e3ce 100%);
+            color: #1F1E1E;
+        }
+
+        .now-playing-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.8;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .track-info {
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .track-artist {
+            font-size: 15px;
+            opacity: 0.9;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        .station-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .station-btn {
+            padding: 0;
+            border: none;
+            background: white;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            height: 140px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            position: relative;
+        }
+
+        body.theme-reprezent .station-btn {
+            background: #2a2929;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .station-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .station-btn.active {
+            transform: scale(1.02);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .station-btn.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: currentColor;
+        }
+
+        .station-btn-classicfm.active::before {
+            background: #DC143C;
+        }
+
+        .station-btn-reprezent.active::before {
+            background: #B8FF61;
+        }
+
+        .station-logo {
+            height: 60px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 15px;
+        }
+
+        .station-logo img {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
+
+        .station-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        body.theme-reprezent .station-name {
+            color: #dcd5ee;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stop-btn,
+        .custom-btn {
+            flex: 1;
+            padding: 16px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        body.theme-reprezent .stop-btn,
+        body.theme-reprezent .custom-btn {
+            background: #2a2929;
+            border-color: #3a3939;
+            color: white;
+        }
+
+        .stop-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .stop-btn:not(:disabled):hover,
+        .custom-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        body.theme-classicfm .stop-btn:not(:disabled):hover {
+            border-color: #DC143C;
+            color: #DC143C;
+        }
+
+        body.theme-reprezent .stop-btn:not(:disabled):hover {
+            border-color: #B8FF61;
+            color: #B8FF61;
+        }
+
+        .custom-btn.active {
+            background: #f8f9fa;
+            border-color: #cbd5e0;
+        }
+
+        body.theme-reprezent .custom-btn.active {
+            background: #1F1E1E;
+            border-color: #B8FF61;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        body.theme-reprezent .volume-control {
+            background: #2a2929;
+        }
+
+        .volume-icon {
+            font-size: 20px;
+        }
+
+        .volume-slider {
+            flex: 1;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #e2e8f0;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        body.theme-reprezent .volume-slider {
+            background: #3a3939;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #667eea;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        body.theme-classicfm .volume-slider::-webkit-slider-thumb {
+            background: #DC143C;
+        }
+
+        body.theme-reprezent .volume-slider::-webkit-slider-thumb {
+            background: #B8FF61;
+        }
+
+        .volume-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: #667eea;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        body.theme-classicfm .volume-slider::-moz-range-thumb {
+            background: #DC143C;
+        }
+
+        body.theme-reprezent .volume-slider::-moz-range-thumb {
+            background: #B8FF61;
+        }
+
+        .volume-value {
+            min-width: 45px;
+            text-align: right;
+            font-weight: 600;
+            font-size: 14px;
+            color: #4a5568;
+        }
+
+        body.theme-reprezent .volume-value {
+            color: #dcd5ee;
+        }
+
+        .custom-stream {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, opacity 0.4s ease;
+            opacity: 0;
+        }
+
+        .custom-stream.visible {
+            max-height: 200px;
+            opacity: 1;
+            margin-bottom: 20px;
+        }
+
+        .custom-stream-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        body.theme-reprezent .custom-stream-input {
+            background: #2a2929;
+            border-color: #3a3939;
+            color: white;
+        }
+
+        .custom-stream-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        body.theme-classicfm .custom-stream-input:focus {
+            border-color: #DC143C;
+        }
+
+        body.theme-reprezent .custom-stream-input:focus {
+            border-color: #B8FF61;
+        }
+
+        .custom-stream-btn {
+            margin-top: 10px;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: #667eea;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        body.theme-classicfm .custom-stream-btn {
+            background: #DC143C;
+        }
+
+        body.theme-reprezent .custom-stream-btn {
+            background: #B8FF61;
+            color: #1F1E1E;
+        }
+
+        .custom-stream-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .status-bar {
+            text-align: center;
+            padding: 10px;
+            font-size: 12px;
+            color: #718096;
+            font-weight: 500;
+        }
+
+        body.theme-reprezent .status-bar {
+            color: #dcd5ee;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #cbd5e0;
+            margin-right: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .status-bar.playing .status-dot {
+            background: #48bb78;
+            animation: pulse-dot 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.2); }
+        }
+    </style>
+</head>
+<body class="no-selection">
+    <div class="player-container">
+        <div class="header">
+            <div class="logo-container" id="logoContainer">
+                <div style="color: #718096; font-size: 24px; font-weight: 800;">RADIO PLAYER</div>
+            </div>
+        </div>
+
+        <div class="now-playing" id="nowPlaying">
+            <div class="now-playing-label">NOW PLAYING</div>
+            <div class="track-info" id="trackInfo">Select a station to begin</div>
+            <div class="track-artist" id="trackArtist"></div>
+        </div>
+
+        <div class="station-buttons">
+            <button class="station-btn station-btn-classicfm" data-station="classicfm" data-url="https://media-ice.musicradio.com/ClassicFMMP3" data-name="Classic FM">
+                <div class="station-logo">
+                    <img src="https://upload.wikimedia.org/wikipedia/en/f/f8/Classic_FM_%28UK%29_logo.svg" alt="Classic FM" onerror="this.parentElement.innerHTML='<div style=\'font-size:28px;font-weight:800;color:#DC143C;\'>CLASSIC FM</div>'">
+                </div>
+                <div class="station-name">Classic FM</div>
+            </button>
+
+            <button class="station-btn station-btn-reprezent" data-station="reprezent" data-url="https://radio.canstream.co.uk:8022/live.mp3" data-url-alt="http://radio.canstream.co.uk:8022/live.mp3" data-name="Reprezent 107.3 FM">
+                <div class="station-logo">
+                    <img src="https://www.reprezent.org.uk/_next/image?url=%2Flogo.png&w=256&q=75" alt="Reprezent Radio" onerror="this.parentElement.innerHTML='<div style=\'font-size:24px;font-weight:800;color:#B8FF61;\'>REPREZENT</div>'">
+                </div>
+                <div class="station-name">Reprezent 107.3</div>
+            </button>
+        </div>
+
+        <div class="controls">
+            <button class="stop-btn" id="stopBtn" disabled>⏹ STOP</button>
+            <button class="custom-btn" id="customBtn">+ CUSTOM</button>
+        </div>
+
+        <div class="custom-stream" id="customStream">
+            <input
+                type="text"
+                class="custom-stream-input"
+                id="customStreamInput"
+                placeholder="Enter stream URL (MP3/AAC)"
+            >
+            <button class="custom-stream-btn" id="playCustomBtn">▶ PLAY CUSTOM STREAM</button>
+        </div>
+
+        <div class="volume-control">
+            <span class="volume-icon">🔊</span>
+            <input type="range" min="0" max="100" value="80" class="volume-slider" id="volumeSlider">
+            <span class="volume-value" id="volumeValue">80%</span>
+        </div>
+
+        <div class="status-bar" id="statusBar">
+            <span class="status-dot"></span>
+            <span id="statusText">Ready</span>
+        </div>
+    </div>
+
+    <script>
+        let audio = null;
+        let metadataInterval = null;
+        let currentStationId = '';
+        let currentStationName = '';
+
+        const stationButtons = document.querySelectorAll('.station-btn');
+        const stopBtn = document.getElementById('stopBtn');
+        const customBtn = document.getElementById('customBtn');
+        const customStream = document.getElementById('customStream');
+        const customStreamInput = document.getElementById('customStreamInput');
+        const playCustomBtn = document.getElementById('playCustomBtn');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeValue = document.getElementById('volumeValue');
+        const statusBar = document.getElementById('statusBar');
+        const statusText = document.getElementById('statusText');
+        const nowPlaying = document.getElementById('nowPlaying');
+        const trackInfo = document.getElementById('trackInfo');
+        const trackArtist = document.getElementById('trackArtist');
+        const logoContainer = document.getElementById('logoContainer');
+
+        // Station button clicks
+        stationButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const stationId = btn.getAttribute('data-station');
+                const url = btn.getAttribute('data-url');
+                const urlAlt = btn.getAttribute('data-url-alt');
+                const name = btn.getAttribute('data-name');
+
+                currentStationId = stationId;
+                currentStationName = name;
+
+                // Update theme
+                document.body.className = `theme-${stationId}`;
+
+                // Update active state
+                stationButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Update logo
+                updateLogo(stationId);
+
+                // Play station with fallback
+                playStream(url, urlAlt);
+
+                // Hide custom stream
+                customStream.classList.remove('visible');
+                customBtn.classList.remove('active');
+            });
+        });
+
+        // Stop button
+        stopBtn.addEventListener('click', () => {
+            stopStream();
+        });
+
+        // Custom stream toggle
+        customBtn.addEventListener('click', () => {
+            customStream.classList.toggle('visible');
+            customBtn.classList.toggle('active');
+        });
+
+        // Play custom stream
+        playCustomBtn.addEventListener('click', () => {
+            const url = customStreamInput.value.trim();
+            if (!url) {
+                updateStatus('Please enter a stream URL');
+                return;
+            }
+
+            currentStationId = '';
+            currentStationName = 'Custom Stream';
+            document.body.className = 'no-selection';
+
+            stationButtons.forEach(b => b.classList.remove('active'));
+            logoContainer.innerHTML = '<div style="color: #718096; font-size: 24px; font-weight: 800;">CUSTOM STREAM</div>';
+
+            playStream(url, null);
+        });
+
+        // Volume control
+        volumeSlider.addEventListener('input', (e) => {
+            const volume = e.target.value;
+            volumeValue.textContent = volume + '%';
+            if (audio) {
+                audio.volume = volume / 100;
+            }
+        });
+
+        // Play stream
+        function playStream(url, urlAlt = null) {
+            if (audio) {
+                audio.pause();
+                audio = null;
+            }
+
+            stopMetadataUpdates();
+
+            audio = new Audio(url);
+            audio.volume = volumeSlider.value / 100;
+
+            let hasTriedAlt = false;
+
+            audio.addEventListener('playing', () => {
+                updateStatus('Streaming live', true);
+                stopBtn.disabled = false;
+
+                // Prevent screen sleep
+                requestWakeLock();
+
+                if (currentStationId) {
+                    startMetadataUpdates();
+                } else {
+                    updateNowPlaying('Live Stream', currentStationName);
+                }
+
+                // Update CarPlay and lock screen controls
+                updateMediaSession(trackInfo.textContent, trackArtist.textContent, currentStationName);
+
+                // Set playback state
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.playbackState = 'playing';
+                }
+            });
+
+            // Handle pause event
+            audio.addEventListener('pause', () => {
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.playbackState = 'paused';
+                }
+            });
+
+            // Handle ended event (shouldn't happen for live streams, but just in case)
+            audio.addEventListener('ended', () => {
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.playbackState = 'none';
+                }
+            });
+
+            audio.addEventListener('error', (e) => {
+                console.error('Stream error:', e, 'URL:', url);
+
+                // Try alternative URL if available and not tried yet
+                if (urlAlt && !hasTriedAlt) {
+                    hasTriedAlt = true;
+                    console.log('Trying alternative URL:', urlAlt);
+                    updateStatus('Trying alternative stream...', true);
+
+                    audio = new Audio(urlAlt);
+                    audio.volume = volumeSlider.value / 100;
+
+                    // Re-attach event listeners for the new audio element
+                    audio.addEventListener('playing', () => {
+                        updateStatus('Streaming live', true);
+                        stopBtn.disabled = false;
+                        requestWakeLock();
+
+                        if (currentStationId) {
+                            startMetadataUpdates();
+                        } else {
+                            updateNowPlaying('Live Stream', currentStationName);
+                        }
+
+                        updateMediaSession(trackInfo.textContent, trackArtist.textContent, currentStationName);
+
+                        if ('mediaSession' in navigator) {
+                            navigator.mediaSession.playbackState = 'playing';
+                        }
+                    });
+
+                    audio.addEventListener('pause', () => {
+                        if ('mediaSession' in navigator) {
+                            navigator.mediaSession.playbackState = 'paused';
+                        }
+                    });
+
+                    audio.addEventListener('ended', () => {
+                        if ('mediaSession' in navigator) {
+                            navigator.mediaSession.playbackState = 'none';
+                        }
+                    });
+
+                    audio.addEventListener('error', () => {
+                        stopMetadataUpdates();
+                        updateStatus('Connection error - Stream may be offline');
+                        updateNowPlaying('Error', 'Unable to connect to stream');
+                        stopBtn.disabled = true;
+                        if ('mediaSession' in navigator) {
+                            navigator.mediaSession.playbackState = 'none';
+                        }
+                    });
+
+                    audio.addEventListener('waiting', () => {
+                        updateStatus('Buffering...', true);
+                    });
+
+                    audio.play().catch((err) => {
+                        console.error('Alternative stream failed:', err);
+                        stopMetadataUpdates();
+                        updateStatus('Both streams failed');
+                        stopBtn.disabled = true;
+                    });
+                } else {
+                    stopMetadataUpdates();
+                    updateStatus('Connection error - Stream may be offline');
+                    updateNowPlaying('Error', 'Unable to connect to stream');
+                    stopBtn.disabled = true;
+                    if ('mediaSession' in navigator) {
+                        navigator.mediaSession.playbackState = 'none';
+                    }
+                }
+            });
+
+            audio.addEventListener('waiting', () => {
+                updateStatus('Buffering...', true);
+            });
+
+            updateStatus('Connecting...', true);
+            audio.play().catch((err) => {
+                console.error('Play failed:', err);
+                // Error event will be triggered automatically
+            });
+        }
+
+        // Stop stream
+        function stopStream() {
+            if (audio) {
+                audio.pause();
+                audio = null;
+            }
+
+            stopMetadataUpdates();
+            releaseWakeLock();
+            updateStatus('Stopped');
+            updateNowPlaying('Stopped', 'Select a station to play');
+            stopBtn.disabled = true;
+
+            // Update CarPlay/lock screen state
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.playbackState = 'none';
+            }
+        }
+
+        // Update logo
+        function updateLogo(stationId) {
+            if (stationId === 'classicfm') {
+                logoContainer.innerHTML = '<img src="https://upload.wikimedia.org/wikipedia/en/f/f8/Classic_FM_%28UK%29_logo.svg" alt="Classic FM" style="max-height: 70px;" onerror="this.outerHTML=\'<div style=\\\'font-size:32px;font-weight:800;color:#DC143C;\\\'>CLASSIC FM</div>\'">';
+            } else if (stationId === 'reprezent') {
+                logoContainer.innerHTML = '<img src="https://www.reprezent.org.uk/_next/image?url=%2Flogo.png&w=256&q=75" alt="Reprezent" style="max-height: 70px;" onerror="this.outerHTML=\'<div style=\\\'font-size:32px;font-weight:800;color:#B8FF61;\\\'>REPREZENT</div>\'">';
+            }
+        }
+
+        // Update status
+        function updateStatus(message, isPlaying = false) {
+            statusText.textContent = message;
+            statusBar.className = 'status-bar';
+            if (isPlaying) {
+                statusBar.classList.add('playing');
+            }
+        }
+
+        // Update now playing
+        function updateNowPlaying(title, artist) {
+            trackInfo.textContent = title;
+            trackArtist.textContent = artist || '';
+
+            // Update lock screen / notification controls
+            if (audio && !audio.paused) {
+                updateMediaSession(title, artist, currentStationName);
+            }
+        }
+
+        // Metadata fetching
+        async function fetchClassicFMNowPlaying() {
+            try {
+                // Use CORS proxy to fetch Classic FM playlist
+                const proxyUrl = 'https://api.allorigins.win/raw?url=';
+                const response = await fetch(proxyUrl + encodeURIComponent('https://www.classicfm.com/radio/playlist/'), {
+                    timeout: 5000
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch playlist');
+                }
+
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                // Look for now-playing section
+                const nowPlayingSection = doc.querySelector('.now-playing');
+                if (nowPlayingSection) {
+                    const h3 = nowPlayingSection.querySelector('h3');
+                    const artistLink = nowPlayingSection.querySelector('p a');
+
+                    if (h3) {
+                        const title = h3.textContent.trim();
+                        const artist = artistLink ? artistLink.textContent.trim() : 'Classic FM';
+                        updateNowPlaying(title, artist);
+                        console.log('Classic FM now playing:', title, '-', artist);
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.log('Classic FM metadata unavailable:', error.message);
+            }
+            updateNowPlaying('Live on Classic FM', 'The World\'s Greatest Music');
+        }
+
+        async function fetchReprezentNowPlaying() {
+            // Note: Reprezent stream metadata may not be available due to CORS restrictions
+            // Showing default message for now
+            console.log('Reprezent metadata: Using default (stream metadata not accessible)');
+            updateNowPlaying('Live on Reprezent', 'Voice of Young London');
+        }
+
+        function startMetadataUpdates() {
+            if (metadataInterval) {
+                clearInterval(metadataInterval);
+            }
+
+            fetchNowPlaying();
+            metadataInterval = setInterval(fetchNowPlaying, 15000);
+        }
+
+        function stopMetadataUpdates() {
+            if (metadataInterval) {
+                clearInterval(metadataInterval);
+                metadataInterval = null;
+            }
+        }
+
+        function fetchNowPlaying() {
+            if (currentStationId === 'classicfm') {
+                fetchClassicFMNowPlaying();
+            } else if (currentStationId === 'reprezent') {
+                fetchReprezentNowPlaying();
+            }
+        }
+
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then((registration) => {
+                        console.log('Service Worker registered:', registration);
+                    })
+                    .catch((error) => {
+                        console.log('Service Worker registration failed:', error);
+                    });
+            });
+        }
+
+        // Enable Media Session API for lock screen and CarPlay controls
+        if ('mediaSession' in navigator) {
+            // Play action
+            navigator.mediaSession.setActionHandler('play', async () => {
+                if (audio && audio.paused) {
+                    try {
+                        await audio.play();
+                        navigator.mediaSession.playbackState = 'playing';
+                    } catch (err) {
+                        console.error('Play failed:', err);
+                    }
+                }
+            });
+
+            // Pause action
+            navigator.mediaSession.setActionHandler('pause', () => {
+                if (audio && !audio.paused) {
+                    audio.pause();
+                    navigator.mediaSession.playbackState = 'paused';
+                }
+            });
+
+            // Stop action
+            navigator.mediaSession.setActionHandler('stop', () => {
+                stopStream();
+                navigator.mediaSession.playbackState = 'none';
+            });
+
+            // Seek backward (optional - for CarPlay)
+            navigator.mediaSession.setActionHandler('seekbackward', (details) => {
+                // Radio streams can't seek, so we'll just restart
+                if (audio && !audio.paused) {
+                    const currentTime = audio.currentTime;
+                    audio.currentTime = Math.max(0, currentTime - (details.seekOffset || 10));
+                }
+            });
+
+            // Seek forward (optional - for CarPlay)
+            navigator.mediaSession.setActionHandler('seekforward', (details) => {
+                // Radio streams can't seek, so we'll ignore this
+                console.log('Seek forward not supported for live radio');
+            });
+
+            // Previous track (cycle to other station)
+            navigator.mediaSession.setActionHandler('previoustrack', () => {
+                // Switch stations
+                const buttons = Array.from(stationButtons);
+                const activeButton = buttons.find(b => b.classList.contains('active'));
+                if (activeButton) {
+                    const currentIndex = buttons.indexOf(activeButton);
+                    const prevButton = buttons[currentIndex === 0 ? buttons.length - 1 : currentIndex - 1];
+                    prevButton.click();
+                }
+            });
+
+            // Next track (cycle to other station)
+            navigator.mediaSession.setActionHandler('nexttrack', () => {
+                // Switch stations
+                const buttons = Array.from(stationButtons);
+                const activeButton = buttons.find(b => b.classList.contains('active'));
+                if (activeButton) {
+                    const currentIndex = buttons.indexOf(activeButton);
+                    const nextButton = buttons[(currentIndex + 1) % buttons.length];
+                    nextButton.click();
+                }
+            });
+        }
+
+        // Update media session metadata when playing (for CarPlay and lock screen)
+        function updateMediaSession(title, artist, station) {
+            if ('mediaSession' in navigator) {
+                // Get station-specific artwork
+                let artworkUrl = './assets/icons/icon-192.png';
+                let largeArtworkUrl = './assets/icons/icon-512.png';
+
+                if (currentStationId === 'classicfm') {
+                    artworkUrl = 'https://upload.wikimedia.org/wikipedia/en/f/f8/Classic_FM_%28UK%29_logo.svg';
+                    largeArtworkUrl = 'https://upload.wikimedia.org/wikipedia/en/f/f8/Classic_FM_%28UK%29_logo.svg';
+                } else if (currentStationId === 'reprezent') {
+                    artworkUrl = 'https://www.reprezent.org.uk/_next/image?url=%2Flogo.png&w=256&q=75';
+                    largeArtworkUrl = 'https://www.reprezent.org.uk/_next/image?url=%2Flogo.png&w=256&q=75';
+                }
+
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: title || 'Radio Stream',
+                    artist: artist || station,
+                    album: station || 'Radio Player',
+                    artwork: [
+                        { src: artworkUrl, sizes: '96x96', type: 'image/png' },
+                        { src: artworkUrl, sizes: '128x128', type: 'image/png' },
+                        { src: artworkUrl, sizes: '192x192', type: 'image/png' },
+                        { src: artworkUrl, sizes: '256x256', type: 'image/png' },
+                        { src: largeArtworkUrl, sizes: '384x384', type: 'image/png' },
+                        { src: largeArtworkUrl, sizes: '512x512', type: 'image/png' }
+                    ]
+                });
+
+                // Set playback state
+                if (audio && !audio.paused) {
+                    navigator.mediaSession.playbackState = 'playing';
+                } else {
+                    navigator.mediaSession.playbackState = 'paused';
+                }
+
+                // Set position state for live streams (always at current time)
+                try {
+                    navigator.mediaSession.setPositionState({
+                        duration: Infinity,
+                        playbackRate: 1,
+                        position: 0
+                    });
+                } catch (err) {
+                    // Position state not supported, ignore
+                }
+            }
+        }
+
+        // Prevent iOS from sleeping while playing
+        let wakeLock = null;
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                }
+            } catch (err) {
+                console.log('Wake Lock error:', err);
+            }
+        }
+
+        function releaseWakeLock() {
+            if (wakeLock) {
+                wakeLock.release();
+                wakeLock = null;
+            }
+        }
+    </script>
+</body>
+</html>
