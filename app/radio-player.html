@@ -15,13 +15,25 @@
     <link rel="apple-touch-icon" href="./assets/icons/icon-192.png">
 
     <!-- Theme Colors -->
-    <meta name="theme-color" content="#2c3e50">
-    <meta name="msapplication-TileColor" content="#2c3e50">
+    <meta name="theme-color" content="#8B4CF6" id="theme-color-meta">
+    <meta name="msapplication-TileColor" content="#8B4CF6">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            /* Backstage Base Colors */
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-card: #0f3460;
+            --accent-primary: #8B4CF6;
+            --accent-secondary: #9BF0E1;
+            --text-primary: #ffffff;
+            --text-secondary: #a0aec0;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -36,457 +48,665 @@
             justify-content: center;
             align-items: center;
             padding: max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
-            transition: background 0.6s ease;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
             -webkit-user-select: none;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
+            position: relative;
+            overflow: hidden;
         }
 
         html {
             height: -webkit-fill-available;
         }
 
-        /* Default/Neutral theme */
+        /* Animated background pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background:
+                radial-gradient(circle at 20% 50%, var(--accent-primary) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, var(--accent-secondary) 0%, transparent 50%);
+            opacity: 0.1;
+            animation: rotate 30s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Base Theme - Backstage Inspired */
         body.no-selection {
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-card: #0f3460;
+            --accent-primary: #8B4CF6;
+            --accent-secondary: #9BF0E1;
+            --text-primary: #ffffff;
+            --text-secondary: #a0aec0;
         }
 
-        /* Classic FM Theme */
+        /* Classic FM Brand Theme - Elegant Crimson */
         body.theme-classicfm {
-            background: linear-gradient(135deg, #8B0000 0%, #DC143C 50%, #4A0E0E 100%);
+            background: linear-gradient(135deg, #1a0505 0%, #8B0000 30%, #DC143C 70%, #4A0E0E 100%);
+            --bg-primary: #1a0505;
+            --bg-secondary: #8B0000;
+            --bg-card: #DC143C;
+            --accent-primary: #FFD700;
+            --accent-secondary: #FFA500;
+            --text-primary: #ffffff;
+            --text-secondary: #f0d9d9;
         }
 
-        /* Reprezent Theme */
+        body.theme-classicfm::before {
+            background:
+                radial-gradient(circle at 20% 50%, #DC143C 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, #FFD700 0%, transparent 50%);
+        }
+
+        /* Reprezent Brand Theme - Neon Urban */
         body.theme-reprezent {
-            background: linear-gradient(135deg, #1F1E1E 0%, #0a0a0a 100%);
+            background: linear-gradient(135deg, #000000 0%, #1F1E1E 50%, #0a0a0a 100%);
+            --bg-primary: #000000;
+            --bg-secondary: #1F1E1E;
+            --bg-card: #2a2929;
+            --accent-primary: #B8FF61;
+            --accent-secondary: #76e3ce;
+            --text-primary: #ffffff;
+            --text-secondary: #B8FF61;
+        }
+
+        body.theme-reprezent::before {
+            background:
+                radial-gradient(circle at 20% 50%, #B8FF61 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, #76e3ce 0%, transparent 50%);
+            opacity: 0.15;
         }
 
         .player-container {
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            padding: 40px;
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
-            max-width: 600px;
+            background: rgba(15, 52, 96, 0.85);
+            backdrop-filter: blur(30px) saturate(180%);
+            border-radius: 32px;
+            padding: 48px;
+            --glow-intensity: 0.3;
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.3),
+                0 0 0 1px var(--border-color),
+                0 0 40px rgba(139, 76, 246, var(--glow-intensity)),
+                0 0 80px rgba(139, 76, 246, calc(var(--glow-intensity) * 0.5)),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            max-width: 700px;
             width: 100%;
-            transition: all 0.6s ease;
+            transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+                        border 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 1;
+            border: 1px solid var(--border-color);
         }
 
         body.theme-classicfm .player-container {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(26, 5, 5, 0.9);
+            box-shadow:
+                0 30px 90px rgba(220, 20, 60, 0.4),
+                0 0 0 1px rgba(255, 215, 0, 0.2),
+                0 0 40px rgba(220, 20, 60, var(--glow-intensity)),
+                0 0 80px rgba(255, 215, 0, calc(var(--glow-intensity) * 0.4)),
+                inset 0 1px 0 rgba(255, 215, 0, 0.1);
         }
 
         body.theme-reprezent .player-container {
             background: rgba(31, 30, 30, 0.95);
+            box-shadow:
+                0 30px 90px rgba(184, 255, 97, 0.2),
+                0 0 0 1px rgba(184, 255, 97, 0.3),
+                0 0 40px rgba(184, 255, 97, var(--glow-intensity)),
+                0 0 80px rgba(118, 227, 206, calc(var(--glow-intensity) * 0.5)),
+                inset 0 1px 0 rgba(184, 255, 97, 0.05);
             color: white;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 35px;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 20px;
+            background: var(--border-color);
+            border-radius: 100px;
+            margin-bottom: 24px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--accent-secondary);
+            transition: all 0.4s ease;
         }
 
         .logo-container {
-            height: 80px;
+            height: 100px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
+            transition: all 0.6s ease;
         }
 
         .logo-container img {
-            max-height: 70px;
-            max-width: 300px;
+            max-height: 85px;
+            max-width: 350px;
             object-fit: contain;
+            filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.3));
+            transition: all 0.6s ease;
+        }
+
+        body.theme-classicfm .logo-container img {
+            filter: drop-shadow(0 8px 30px rgba(255, 215, 0, 0.4));
+        }
+
+        body.theme-reprezent .logo-container img {
+            filter: drop-shadow(0 8px 30px rgba(184, 255, 97, 0.5));
+        }
+
+        .tagline {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            opacity: 0.8;
+            letter-spacing: 0.5px;
         }
 
         .now-playing {
             text-align: center;
-            padding: 25px;
-            border-radius: 16px;
-            margin-bottom: 30px;
-            min-height: 120px;
+            padding: 32px;
+            border-radius: 20px;
+            margin-bottom: 32px;
+            min-height: 140px;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            transition: all 0.6s ease;
-        }
-
-        body.no-selection .now-playing {
-            background: #f8f9fa;
-            color: #666;
-        }
-
-        body.theme-classicfm .now-playing {
-            background: linear-gradient(135deg, #8B0000 0%, #DC143C 100%);
-            color: white;
-        }
-
-        body.theme-reprezent .now-playing {
-            background: linear-gradient(135deg, #B8FF61 0%, #76e3ce 100%);
-            color: #1F1E1E;
-        }
-
-        .now-playing-label {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            opacity: 0.8;
-            margin-bottom: 12px;
-            font-weight: 600;
-        }
-
-        .track-info {
-            font-size: 18px;
-            font-weight: 600;
-            line-height: 1.4;
-        }
-
-        .track-artist {
-            font-size: 15px;
-            opacity: 0.9;
-            margin-top: 6px;
-            font-weight: 500;
-        }
-
-        .station-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .station-btn {
-            padding: 0;
-            border: none;
-            background: white;
-            border-radius: 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            height: 140px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
         }
 
-        body.theme-reprezent .station-btn {
-            background: #2a2929;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .station-btn:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-        }
-
-        .station-btn.active {
-            transform: scale(1.02);
-            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
-        }
-
-        .station-btn.active::before {
+        .now-playing::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            height: 4px;
-            background: currentColor;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            opacity: 0;
+            transition: opacity 0.4s ease;
         }
 
-        .station-btn-classicfm.active::before {
-            background: #DC143C;
+        .now-playing.playing::before {
+            opacity: 1;
         }
 
-        .station-btn-reprezent.active::before {
-            background: #B8FF61;
+        body.no-selection .now-playing {
+            background: linear-gradient(135deg, rgba(139, 76, 246, 0.15) 0%, rgba(155, 240, 225, 0.15) 100%);
+        }
+
+        body.theme-classicfm .now-playing {
+            background: linear-gradient(135deg, rgba(220, 20, 60, 0.25) 0%, rgba(139, 0, 0, 0.25) 100%);
+            border-color: rgba(255, 215, 0, 0.2);
+        }
+
+        body.theme-reprezent .now-playing {
+            background: linear-gradient(135deg, rgba(184, 255, 97, 0.15) 0%, rgba(118, 227, 206, 0.15) 100%);
+            border-color: rgba(184, 255, 97, 0.2);
+        }
+
+        .now-playing-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            opacity: 0.7;
+            margin-bottom: 16px;
+            font-weight: 700;
+            color: var(--accent-secondary);
+        }
+
+        .track-info {
+            font-size: 20px;
+            font-weight: 700;
+            line-height: 1.4;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .track-artist {
+            font-size: 15px;
+            opacity: 0.8;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .station-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .station-card {
+            padding: 0;
+            border: none;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            height: 160px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            position: relative;
+            border: 2px solid transparent;
+        }
+
+        .station-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .station-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: var(--accent-primary);
+        }
+
+        .station-card:hover::before {
+            opacity: 1;
+        }
+
+        .station-card.active {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow:
+                0 25px 50px rgba(0, 0, 0, 0.4),
+                0 0 0 3px var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+
+        body.theme-classicfm .station-card.active {
+            box-shadow:
+                0 25px 50px rgba(220, 20, 60, 0.5),
+                0 0 0 3px #FFD700;
+            border-color: #FFD700;
+        }
+
+        body.theme-reprezent .station-card.active {
+            box-shadow:
+                0 25px 50px rgba(184, 255, 97, 0.4),
+                0 0 0 3px #B8FF61;
+            border-color: #B8FF61;
         }
 
         .station-logo {
-            height: 60px;
+            height: 70px;
             width: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 0 15px;
+            padding: 0 20px;
         }
 
         .station-logo img {
             max-height: 100%;
             max-width: 100%;
             object-fit: contain;
+            transition: all 0.3s ease;
+        }
+
+        .station-card:hover .station-logo img {
+            transform: scale(1.1);
         }
 
         .station-name {
-            font-size: 13px;
-            font-weight: 600;
-            color: #666;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-secondary);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
         }
 
-        body.theme-reprezent .station-name {
-            color: #dcd5ee;
+        .station-card:hover .station-name {
+            color: var(--accent-primary);
         }
 
         .controls {
-            display: flex;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
             gap: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
-        .stop-btn,
+        .control-btn,
         .custom-btn {
-            flex: 1;
-            padding: 16px;
-            border: 2px solid #e2e8f0;
-            background: white;
-            border-radius: 12px;
+            padding: 16px 20px;
+            border: 2px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 14px;
             cursor: pointer;
             font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s ease;
+            font-size: 13px;
+            font-weight: 700;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            color: var(--text-primary);
+            position: relative;
+            overflow: hidden;
         }
 
-        body.theme-reprezent .stop-btn,
-        body.theme-reprezent .custom-btn {
-            background: #2a2929;
-            border-color: #3a3939;
-            color: white;
+        .control-btn::before,
+        .custom-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--accent-primary);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
         }
 
-        .stop-btn:disabled {
-            opacity: 0.4;
+        .control-btn:hover:not(:disabled),
+        .custom-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border-color: var(--accent-primary);
+        }
+
+        .control-btn:hover:not(:disabled)::before,
+        .custom-btn:hover::before {
+            opacity: 0.1;
+        }
+
+        .control-btn:disabled {
+            opacity: 0.3;
             cursor: not-allowed;
         }
 
-        .stop-btn:not(:disabled):hover,
-        .custom-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-        }
-
-        body.theme-classicfm .stop-btn:not(:disabled):hover {
-            border-color: #DC143C;
-            color: #DC143C;
-        }
-
-        body.theme-reprezent .stop-btn:not(:disabled):hover {
-            border-color: #B8FF61;
-            color: #B8FF61;
-        }
-
         .custom-btn.active {
-            background: #f8f9fa;
-            border-color: #cbd5e0;
+            background: rgba(139, 76, 246, 0.2);
+            border-color: var(--accent-primary);
+        }
+
+        body.theme-classicfm .custom-btn.active {
+            background: rgba(255, 215, 0, 0.15);
+            border-color: #FFD700;
         }
 
         body.theme-reprezent .custom-btn.active {
-            background: #1F1E1E;
+            background: rgba(184, 255, 97, 0.15);
             border-color: #B8FF61;
-        }
-
-        .volume-control {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 16px 20px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
-
-        body.theme-reprezent .volume-control {
-            background: #2a2929;
-        }
-
-        .volume-icon {
-            font-size: 20px;
-        }
-
-        .volume-slider {
-            flex: 1;
-            height: 6px;
-            -webkit-appearance: none;
-            appearance: none;
-            background: #e2e8f0;
-            border-radius: 3px;
-            outline: none;
-        }
-
-        body.theme-reprezent .volume-slider {
-            background: #3a3939;
-        }
-
-        .volume-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            background: #667eea;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        body.theme-classicfm .volume-slider::-webkit-slider-thumb {
-            background: #DC143C;
-        }
-
-        body.theme-reprezent .volume-slider::-webkit-slider-thumb {
-            background: #B8FF61;
-        }
-
-        .volume-slider::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
-        }
-
-        .volume-slider::-moz-range-thumb {
-            width: 18px;
-            height: 18px;
-            background: #667eea;
-            border-radius: 50%;
-            cursor: pointer;
-            border: none;
-        }
-
-        body.theme-classicfm .volume-slider::-moz-range-thumb {
-            background: #DC143C;
-        }
-
-        body.theme-reprezent .volume-slider::-moz-range-thumb {
-            background: #B8FF61;
-        }
-
-        .volume-value {
-            min-width: 45px;
-            text-align: right;
-            font-weight: 600;
-            font-size: 14px;
-            color: #4a5568;
-        }
-
-        body.theme-reprezent .volume-value {
-            color: #dcd5ee;
         }
 
         .custom-stream {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.4s ease, opacity 0.4s ease;
+            transition: max-height 0.4s ease, opacity 0.4s ease, margin 0.4s ease;
             opacity: 0;
         }
 
         .custom-stream.visible {
             max-height: 200px;
             opacity: 1;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         .custom-stream-input {
             width: 100%;
-            padding: 14px 16px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
+            padding: 16px 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 14px;
             font-family: 'Inter', sans-serif;
             font-size: 14px;
             transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-primary);
+            margin-bottom: 12px;
         }
 
-        body.theme-reprezent .custom-stream-input {
-            background: #2a2929;
-            border-color: #3a3939;
-            color: white;
+        .custom-stream-input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.5;
         }
 
         .custom-stream-input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--accent-primary);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 0 4px rgba(139, 76, 246, 0.1);
         }
 
         body.theme-classicfm .custom-stream-input:focus {
-            border-color: #DC143C;
+            border-color: #FFD700;
+            box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.15);
         }
 
         body.theme-reprezent .custom-stream-input:focus {
             border-color: #B8FF61;
+            box-shadow: 0 0 0 4px rgba(184, 255, 97, 0.15);
         }
 
         .custom-stream-btn {
-            margin-top: 10px;
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             border: none;
-            border-radius: 10px;
-            background: #667eea;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             color: white;
             font-family: 'Inter', sans-serif;
-            font-weight: 600;
+            font-weight: 700;
+            font-size: 13px;
             cursor: pointer;
             transition: all 0.3s ease;
-        }
-
-        body.theme-classicfm .custom-stream-btn {
-            background: #DC143C;
-        }
-
-        body.theme-reprezent .custom-stream-btn {
-            background: #B8FF61;
-            color: #1F1E1E;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .custom-stream-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 30px rgba(139, 76, 246, 0.4);
+        }
+
+        body.theme-classicfm .custom-stream-btn {
+            background: linear-gradient(135deg, #DC143C, #FFD700);
+        }
+
+        body.theme-reprezent .custom-stream-btn {
+            background: linear-gradient(135deg, #B8FF61, #76e3ce);
+            color: #000;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px 24px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .volume-icon {
+            font-size: 22px;
+            transition: transform 0.3s ease;
+        }
+
+        .volume-control:hover .volume-icon {
+            transform: scale(1.1);
+        }
+
+        .volume-slider {
+            flex: 1;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            outline: none;
+            position: relative;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 10px rgba(139, 76, 246, 0.4);
+        }
+
+        .volume-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.3);
+            box-shadow: 0 4px 20px rgba(139, 76, 246, 0.6);
+        }
+
+        body.theme-classicfm .volume-slider::-webkit-slider-thumb {
+            background: #FFD700;
+            box-shadow: 0 2px 10px rgba(255, 215, 0, 0.4);
+        }
+
+        body.theme-classicfm .volume-slider::-webkit-slider-thumb:hover {
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.6);
+        }
+
+        body.theme-reprezent .volume-slider::-webkit-slider-thumb {
+            background: #B8FF61;
+            box-shadow: 0 2px 10px rgba(184, 255, 97, 0.4);
+        }
+
+        body.theme-reprezent .volume-slider::-webkit-slider-thumb:hover {
+            box-shadow: 0 4px 20px rgba(184, 255, 97, 0.6);
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .volume-value {
+            min-width: 50px;
+            text-align: right;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--accent-primary);
         }
 
         .status-bar {
             text-align: center;
-            padding: 10px;
+            padding: 12px;
             font-size: 12px;
-            color: #718096;
-            font-weight: 500;
-        }
-
-        body.theme-reprezent .status-bar {
-            color: #dcd5ee;
+            color: var(--text-secondary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
         .status-dot {
             display: inline-block;
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
-            background: #cbd5e0;
-            margin-right: 8px;
+            background: rgba(255, 255, 255, 0.3);
             transition: all 0.3s ease;
         }
 
         .status-bar.playing .status-dot {
-            background: #48bb78;
+            background: var(--accent-primary);
             animation: pulse-dot 1.5s ease-in-out infinite;
+            box-shadow: 0 0 15px var(--accent-primary);
+        }
+
+        body.theme-classicfm .status-bar.playing .status-dot {
+            background: #FFD700;
+            box-shadow: 0 0 15px #FFD700;
+        }
+
+        body.theme-reprezent .status-bar.playing .status-dot {
+            background: #B8FF61;
+            box-shadow: 0 0 15px #B8FF61;
         }
 
         @keyframes pulse-dot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(1.2); }
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(1.3);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .player-container {
+                padding: 32px 24px;
+            }
+
+            .controls {
+                grid-template-columns: 1fr;
+            }
+
+            .station-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body class="no-selection">
     <div class="player-container">
         <div class="header">
-            <div class="logo-container" id="logoContainer">
-                <div style="color: #718096; font-size: 24px; font-weight: 800;">RADIO PLAYER</div>
+            <div class="brand-badge">
+                <span>🎵</span>
+                <span id="brandBadge">Radio Player</span>
             </div>
+            <div class="logo-container" id="logoContainer">
+                <div style="color: var(--accent-primary); font-size: 32px; font-weight: 900; letter-spacing: -1px;">RADIO</div>
+            </div>
+            <div class="tagline" id="tagline">Select your station to begin</div>
         </div>
 
         <div class="now-playing" id="nowPlaying">
@@ -495,24 +715,24 @@
             <div class="track-artist" id="trackArtist"></div>
         </div>
 
-        <div class="station-buttons">
-            <button class="station-btn station-btn-classicfm" data-station="classicfm" data-url="https://media-ice.musicradio.com/ClassicFMMP3" data-name="Classic FM">
+        <div class="station-grid">
+            <button class="station-card" data-station="classicfm" data-url="https://media-ice.musicradio.com/ClassicFMMP3" data-name="Classic FM" data-tagline="The World's Greatest Music">
                 <div class="station-logo">
-                    <img src="https://upload.wikimedia.org/wikipedia/en/f/f8/Classic_FM_%28UK%29_logo.svg" alt="Classic FM" onerror="this.parentElement.innerHTML='<div style=\'font-size:28px;font-weight:800;color:#DC143C;\'>CLASSIC FM</div>'">
+                    <img src="https://upload.wikimedia.org/wikipedia/en/f/f8/Classic_FM_%28UK%29_logo.svg" alt="Classic FM" onerror="this.parentElement.innerHTML='<div style=\'font-size:32px;font-weight:900;color:#DC143C;\'>CLASSIC FM</div>'">
                 </div>
                 <div class="station-name">Classic FM</div>
             </button>
 
-            <button class="station-btn station-btn-reprezent" data-station="reprezent" data-url="https://radio.canstream.co.uk:8022/live.mp3" data-url-alt="http://radio.canstream.co.uk:8022/live.mp3" data-name="Reprezent 107.3 FM">
+            <button class="station-card" data-station="reprezent" data-url="https://radio.canstream.co.uk:8022/live.mp3" data-url-alt="http://radio.canstream.co.uk:8022/live.mp3" data-name="Reprezent 107.3 FM" data-tagline="Voice of Young London">
                 <div class="station-logo">
-                    <img src="https://www.reprezent.org.uk/_next/image?url=%2Flogo.png&w=256&q=75" alt="Reprezent Radio" onerror="this.parentElement.innerHTML='<div style=\'font-size:24px;font-weight:800;color:#B8FF61;\'>REPREZENT</div>'">
+                    <img src="https://www.reprezent.org.uk/_next/image?url=%2Flogo.png&w=256&q=75" alt="Reprezent Radio" onerror="this.parentElement.innerHTML='<div style=\'font-size:28px;font-weight:900;color:#B8FF61;\'>REPREZENT</div>'">
                 </div>
                 <div class="station-name">Reprezent 107.3</div>
             </button>
         </div>
 
         <div class="controls">
-            <button class="stop-btn" id="stopBtn" disabled>⏹ STOP</button>
+            <button class="control-btn" id="stopBtn" disabled>⏹ STOP</button>
             <button class="custom-btn" id="customBtn">+ CUSTOM</button>
         </div>
 
@@ -536,6 +756,10 @@
             <span class="status-dot"></span>
             <span id="statusText">Ready</span>
         </div>
+
+        <div style="text-align: center; margin-top: 16px; font-size: 10px; opacity: 0.4; color: var(--text-secondary);">
+            v2.2 - Debug Mode
+        </div>
     </div>
 
     <script>
@@ -543,8 +767,12 @@
         let metadataInterval = null;
         let currentStationId = '';
         let currentStationName = '';
+        let audioContext = null;
+        let analyser = null;
+        let dataArray = null;
+        let animationFrameId = null;
 
-        const stationButtons = document.querySelectorAll('.station-btn');
+        const stationCards = document.querySelectorAll('.station-card');
         const stopBtn = document.getElementById('stopBtn');
         const customBtn = document.getElementById('customBtn');
         const customStream = document.getElementById('customStream');
@@ -558,14 +786,18 @@
         const trackInfo = document.getElementById('trackInfo');
         const trackArtist = document.getElementById('trackArtist');
         const logoContainer = document.getElementById('logoContainer');
+        const brandBadge = document.getElementById('brandBadge');
+        const tagline = document.getElementById('tagline');
+        const themeColorMeta = document.getElementById('theme-color-meta');
 
         // Station button clicks
-        stationButtons.forEach(btn => {
+        stationCards.forEach(btn => {
             btn.addEventListener('click', () => {
                 const stationId = btn.getAttribute('data-station');
                 const url = btn.getAttribute('data-url');
                 const urlAlt = btn.getAttribute('data-url-alt');
                 const name = btn.getAttribute('data-name');
+                const stationTagline = btn.getAttribute('data-tagline');
 
                 currentStationId = stationId;
                 currentStationName = name;
@@ -574,11 +806,14 @@
                 document.body.className = `theme-${stationId}`;
 
                 // Update active state
-                stationButtons.forEach(b => b.classList.remove('active'));
+                stationCards.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
 
-                // Update logo
-                updateLogo(stationId);
+                // Update branding
+                updateBranding(stationId, name, stationTagline);
+
+                // Update theme color meta tag
+                updateThemeColor(stationId);
 
                 // Play station with fallback
                 playStream(url, urlAlt);
@@ -612,8 +847,11 @@
             currentStationName = 'Custom Stream';
             document.body.className = 'no-selection';
 
-            stationButtons.forEach(b => b.classList.remove('active'));
-            logoContainer.innerHTML = '<div style="color: #718096; font-size: 24px; font-weight: 800;">CUSTOM STREAM</div>';
+            stationCards.forEach(b => b.classList.remove('active'));
+            logoContainer.innerHTML = '<div style="color: var(--accent-primary); font-size: 32px; font-weight: 900; letter-spacing: -1px;">CUSTOM</div>';
+            brandBadge.textContent = 'Custom Stream';
+            tagline.textContent = 'Custom URL Stream';
+            updateThemeColor('');
 
             playStream(url, null);
         });
@@ -627,8 +865,33 @@
             }
         });
 
+        // Update branding
+        function updateBranding(stationId, name, stationTagline) {
+            brandBadge.textContent = name;
+            tagline.textContent = stationTagline;
+
+            if (stationId === 'classicfm') {
+                logoContainer.innerHTML = '<img src="https://upload.wikimedia.org/wikipedia/en/f/f8/Classic_FM_%28UK%29_logo.svg" alt="Classic FM" style="max-height: 85px;" onerror="this.outerHTML=\'<div style=\\\'font-size:40px;font-weight:900;color:#DC143C;\\\'>CLASSIC FM</div>\'">';
+            } else if (stationId === 'reprezent') {
+                logoContainer.innerHTML = '<img src="https://www.reprezent.org.uk/_next/image?url=%2Flogo.png&w=256&q=75" alt="Reprezent" style="max-height: 85px;" onerror="this.outerHTML=\'<div style=\\\'font-size:40px;font-weight:900;color:#B8FF61;\\\'>REPREZENT</div>\'">';
+            }
+        }
+
+        // Update theme color meta tag
+        function updateThemeColor(stationId) {
+            if (stationId === 'classicfm') {
+                themeColorMeta.setAttribute('content', '#DC143C');
+            } else if (stationId === 'reprezent') {
+                themeColorMeta.setAttribute('content', '#B8FF61');
+            } else {
+                themeColorMeta.setAttribute('content', '#8B4CF6');
+            }
+        }
+
         // Play stream
         function playStream(url, urlAlt = null) {
+            console.log('🎵 playStream called with URL:', url);
+
             if (audio) {
                 audio.pause();
                 audio = null;
@@ -641,12 +904,30 @@
 
             let hasTriedAlt = false;
 
+            audio.addEventListener('loadstart', () => {
+                console.log('📡 Audio loading started...');
+            });
+
+            audio.addEventListener('loadeddata', () => {
+                console.log('✅ Audio data loaded');
+            });
+
+            audio.addEventListener('canplay', () => {
+                console.log('▶️ Audio can play');
+            });
+
             audio.addEventListener('playing', () => {
+                console.log('🎶 PLAYING EVENT FIRED - Audio is playing!');
                 updateStatus('Streaming live', true);
                 stopBtn.disabled = false;
+                nowPlaying.classList.add('playing');
 
                 // Prevent screen sleep
                 requestWakeLock();
+
+                // Start audio visualization
+                console.log('🎨 Calling setupAudioVisualization()...');
+                setupAudioVisualization();
 
                 if (currentStationId) {
                     startMetadataUpdates();
@@ -665,13 +946,15 @@
 
             // Handle pause event
             audio.addEventListener('pause', () => {
+                nowPlaying.classList.remove('playing');
                 if ('mediaSession' in navigator) {
                     navigator.mediaSession.playbackState = 'paused';
                 }
             });
 
-            // Handle ended event (shouldn't happen for live streams, but just in case)
+            // Handle ended event
             audio.addEventListener('ended', () => {
+                nowPlaying.classList.remove('playing');
                 if ('mediaSession' in navigator) {
                     navigator.mediaSession.playbackState = 'none';
                 }
@@ -693,7 +976,9 @@
                     audio.addEventListener('playing', () => {
                         updateStatus('Streaming live', true);
                         stopBtn.disabled = false;
+                        nowPlaying.classList.add('playing');
                         requestWakeLock();
+                        setupAudioVisualization();
 
                         if (currentStationId) {
                             startMetadataUpdates();
@@ -709,12 +994,14 @@
                     });
 
                     audio.addEventListener('pause', () => {
+                        nowPlaying.classList.remove('playing');
                         if ('mediaSession' in navigator) {
                             navigator.mediaSession.playbackState = 'paused';
                         }
                     });
 
                     audio.addEventListener('ended', () => {
+                        nowPlaying.classList.remove('playing');
                         if ('mediaSession' in navigator) {
                             navigator.mediaSession.playbackState = 'none';
                         }
@@ -722,6 +1009,7 @@
 
                     audio.addEventListener('error', () => {
                         stopMetadataUpdates();
+                        nowPlaying.classList.remove('playing');
                         updateStatus('Connection error - Stream may be offline');
                         updateNowPlaying('Error', 'Unable to connect to stream');
                         stopBtn.disabled = true;
@@ -737,11 +1025,13 @@
                     audio.play().catch((err) => {
                         console.error('Alternative stream failed:', err);
                         stopMetadataUpdates();
+                        nowPlaying.classList.remove('playing');
                         updateStatus('Both streams failed');
                         stopBtn.disabled = true;
                     });
                 } else {
                     stopMetadataUpdates();
+                    nowPlaying.classList.remove('playing');
                     updateStatus('Connection error - Stream may be offline');
                     updateNowPlaying('Error', 'Unable to connect to stream');
                     stopBtn.disabled = true;
@@ -756,10 +1046,27 @@
             });
 
             updateStatus('Connecting...', true);
-            audio.play().catch((err) => {
-                console.error('Play failed:', err);
-                // Error event will be triggered automatically
-            });
+            console.log('🚀 Attempting to play audio...');
+
+            audio.play()
+                .then(() => {
+                    console.log('✅ audio.play() promise resolved - playback started');
+                })
+                .catch((err) => {
+                    console.error('❌ audio.play() FAILED:', err);
+                    console.error('Error name:', err.name);
+                    console.error('Error message:', err.message);
+
+                    if (err.name === 'NotAllowedError') {
+                        console.error('🚫 Autoplay blocked by browser. User interaction required.');
+                        updateStatus('Click again to play - Browser blocked autoplay');
+                    } else if (err.name === 'NotSupportedError') {
+                        console.error('🚫 Audio format not supported');
+                        updateStatus('Audio format not supported');
+                    } else {
+                        updateStatus('Playback error - Click again');
+                    }
+                });
         }
 
         // Stop stream
@@ -771,6 +1078,8 @@
 
             stopMetadataUpdates();
             releaseWakeLock();
+            stopAudioVisualization();
+            nowPlaying.classList.remove('playing');
             updateStatus('Stopped');
             updateNowPlaying('Stopped', 'Select a station to play');
             stopBtn.disabled = true;
@@ -778,15 +1087,6 @@
             // Update CarPlay/lock screen state
             if ('mediaSession' in navigator) {
                 navigator.mediaSession.playbackState = 'none';
-            }
-        }
-
-        // Update logo
-        function updateLogo(stationId) {
-            if (stationId === 'classicfm') {
-                logoContainer.innerHTML = '<img src="https://upload.wikimedia.org/wikipedia/en/f/f8/Classic_FM_%28UK%29_logo.svg" alt="Classic FM" style="max-height: 70px;" onerror="this.outerHTML=\'<div style=\\\'font-size:32px;font-weight:800;color:#DC143C;\\\'>CLASSIC FM</div>\'">';
-            } else if (stationId === 'reprezent') {
-                logoContainer.innerHTML = '<img src="https://www.reprezent.org.uk/_next/image?url=%2Flogo.png&w=256&q=75" alt="Reprezent" style="max-height: 70px;" onerror="this.outerHTML=\'<div style=\\\'font-size:32px;font-weight:800;color:#B8FF61;\\\'>REPREZENT</div>\'">';
             }
         }
 
@@ -813,7 +1113,6 @@
         // Metadata fetching
         async function fetchClassicFMNowPlaying() {
             try {
-                // Use CORS proxy to fetch Classic FM playlist
                 const proxyUrl = 'https://api.allorigins.win/raw?url=';
                 const response = await fetch(proxyUrl + encodeURIComponent('https://www.classicfm.com/radio/playlist/'), {
                     timeout: 5000
@@ -827,7 +1126,6 @@
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
 
-                // Look for now-playing section
                 const nowPlayingSection = doc.querySelector('.now-playing');
                 if (nowPlayingSection) {
                     const h3 = nowPlayingSection.querySelector('h3');
@@ -848,8 +1146,6 @@
         }
 
         async function fetchReprezentNowPlaying() {
-            // Note: Reprezent stream metadata may not be available due to CORS restrictions
-            // Showing default message for now
             console.log('Reprezent metadata: Using default (stream metadata not accessible)');
             updateNowPlaying('Live on Reprezent', 'Voice of Young London');
         }
@@ -893,7 +1189,6 @@
 
         // Enable Media Session API for lock screen and CarPlay controls
         if ('mediaSession' in navigator) {
-            // Play action
             navigator.mediaSession.setActionHandler('play', async () => {
                 if (audio && audio.paused) {
                     try {
@@ -905,7 +1200,6 @@
                 }
             });
 
-            // Pause action
             navigator.mediaSession.setActionHandler('pause', () => {
                 if (audio && !audio.paused) {
                     audio.pause();
@@ -913,31 +1207,24 @@
                 }
             });
 
-            // Stop action
             navigator.mediaSession.setActionHandler('stop', () => {
                 stopStream();
                 navigator.mediaSession.playbackState = 'none';
             });
 
-            // Seek backward (optional - for CarPlay)
             navigator.mediaSession.setActionHandler('seekbackward', (details) => {
-                // Radio streams can't seek, so we'll just restart
                 if (audio && !audio.paused) {
                     const currentTime = audio.currentTime;
                     audio.currentTime = Math.max(0, currentTime - (details.seekOffset || 10));
                 }
             });
 
-            // Seek forward (optional - for CarPlay)
             navigator.mediaSession.setActionHandler('seekforward', (details) => {
-                // Radio streams can't seek, so we'll ignore this
                 console.log('Seek forward not supported for live radio');
             });
 
-            // Previous track (cycle to other station)
             navigator.mediaSession.setActionHandler('previoustrack', () => {
-                // Switch stations
-                const buttons = Array.from(stationButtons);
+                const buttons = Array.from(stationCards);
                 const activeButton = buttons.find(b => b.classList.contains('active'));
                 if (activeButton) {
                     const currentIndex = buttons.indexOf(activeButton);
@@ -946,10 +1233,8 @@
                 }
             });
 
-            // Next track (cycle to other station)
             navigator.mediaSession.setActionHandler('nexttrack', () => {
-                // Switch stations
-                const buttons = Array.from(stationButtons);
+                const buttons = Array.from(stationCards);
                 const activeButton = buttons.find(b => b.classList.contains('active'));
                 if (activeButton) {
                     const currentIndex = buttons.indexOf(activeButton);
@@ -959,10 +1244,9 @@
             });
         }
 
-        // Update media session metadata when playing (for CarPlay and lock screen)
+        // Update media session metadata
         function updateMediaSession(title, artist, station) {
             if ('mediaSession' in navigator) {
-                // Get station-specific artwork
                 let artworkUrl = './assets/icons/icon-192.png';
                 let largeArtworkUrl = './assets/icons/icon-512.png';
 
@@ -988,14 +1272,12 @@
                     ]
                 });
 
-                // Set playback state
                 if (audio && !audio.paused) {
                     navigator.mediaSession.playbackState = 'playing';
                 } else {
                     navigator.mediaSession.playbackState = 'paused';
                 }
 
-                // Set position state for live streams (always at current time)
                 try {
                     navigator.mediaSession.setPositionState({
                         duration: Infinity,
@@ -1003,7 +1285,7 @@
                         position: 0
                     });
                 } catch (err) {
-                    // Position state not supported, ignore
+                    // Position state not supported
                 }
             }
         }
@@ -1024,6 +1306,147 @@
             if (wakeLock) {
                 wakeLock.release();
                 wakeLock = null;
+            }
+        }
+
+        // Audio visualization - pulse glow with music
+        function setupAudioVisualization() {
+            console.log('🎨 setupAudioVisualization() called');
+            console.log('   - audio exists:', !!audio);
+            console.log('   - audio.src:', audio?.src);
+            console.log('   - audio.paused:', audio?.paused);
+
+            if (!audio || !audio.src) {
+                console.warn('⚠️ Cannot setup visualization: no audio or no src');
+                return;
+            }
+
+            // Try real audio analysis first
+            try {
+                console.log('🔬 Attempting Web Audio API setup...');
+
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    console.log('✅ AudioContext created:', audioContext.state);
+                }
+
+                if (!analyser) {
+                    analyser = audioContext.createAnalyser();
+                    analyser.fftSize = 256;
+                    const bufferLength = analyser.frequencyBinCount;
+                    dataArray = new Uint8Array(bufferLength);
+
+                    const source = audioContext.createMediaElementSource(audio);
+                    source.connect(analyser);
+                    analyser.connect(audioContext.destination);
+
+                    console.log('✅ Analyser created, FFT size:', analyser.fftSize);
+                }
+
+                console.log('✅ Audio visualization: Real-time audio analysis active');
+                visualize();
+                return;
+            } catch (err) {
+                // CORS blocks audio analysis for cross-origin streams
+                console.log('⚠️ Audio visualization: CORS blocked, using simulated pulse effect');
+                console.log('   Error name:', err.name);
+                console.log('   Error message:', err.message);
+            }
+
+            // Fallback: Simulated rhythmic pulse effect
+            console.log('🌊 Starting fallback pulse visualization...');
+            visualizeFallback();
+        }
+
+        function visualize() {
+            if (!analyser || !dataArray) {
+                console.warn('⚠️ visualize() called but no analyser/dataArray');
+                return;
+            }
+
+            animationFrameId = requestAnimationFrame(visualize);
+
+            analyser.getByteFrequencyData(dataArray);
+
+            let sum = 0;
+            const focusRange = Math.floor(dataArray.length * 0.3);
+            for (let i = 0; i < focusRange; i++) {
+                sum += dataArray[i];
+            }
+            const average = sum / focusRange;
+
+            const intensity = 0.2 + (average / 255) * 0.6;
+
+            const playerContainer = document.querySelector('.player-container');
+            if (playerContainer) {
+                playerContainer.style.setProperty('--glow-intensity', intensity);
+
+                // Log every 60 frames (approx 1 second)
+                if (Math.random() < 0.016) {
+                    console.log(`🎵 Real audio analysis - intensity: ${intensity.toFixed(2)}, avg: ${average.toFixed(0)}`);
+                }
+            }
+        }
+
+        // Fallback: Simulated rhythmic pulse (when CORS blocks real audio analysis)
+        function visualizeFallback() {
+            console.log('🌊 visualizeFallback() started');
+            let startTime = Date.now();
+            let frameCount = 0;
+
+            function pulse() {
+                if (!audio || audio.paused) {
+                    console.log('⏸️ Pulse stopped - audio paused or missing');
+                    return;
+                }
+
+                animationFrameId = requestAnimationFrame(pulse);
+                frameCount++;
+
+                const elapsed = (Date.now() - startTime) / 1000;
+
+                // Create a rhythmic pulse pattern (simulates music beats)
+                // Combines multiple sine waves at different frequencies for natural feel
+                const beat1 = Math.sin(elapsed * 2.5) * 0.5 + 0.5;  // Main beat (2.5 Hz ~= 150 BPM)
+                const beat2 = Math.sin(elapsed * 1.25) * 0.3 + 0.3; // Secondary rhythm
+                const beat3 = Math.sin(elapsed * 5) * 0.2 + 0.2;    // Fast hi-hat simulation
+
+                // Combine for natural-feeling pulse
+                const combined = (beat1 * 0.5 + beat2 * 0.3 + beat3 * 0.2);
+
+                // Map to glow intensity (0.25 to 0.75 range)
+                const intensity = 0.25 + combined * 0.5;
+
+                const playerContainer = document.querySelector('.player-container');
+                if (playerContainer) {
+                    playerContainer.style.setProperty('--glow-intensity', intensity);
+
+                    // Log every 60 frames (approx 1 second)
+                    if (frameCount % 60 === 0) {
+                        console.log(`💫 Fallback pulse - frame: ${frameCount}, intensity: ${intensity.toFixed(2)}, elapsed: ${elapsed.toFixed(1)}s`);
+                    }
+                } else {
+                    console.warn('⚠️ Could not find .player-container element!');
+                }
+            }
+
+            console.log('🚀 Starting pulse animation loop...');
+            pulse();
+        }
+
+        function stopAudioVisualization() {
+            console.log('⏹️ stopAudioVisualization() called');
+
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+                console.log('   ✅ Animation frame cancelled');
+            }
+
+            const playerContainer = document.querySelector('.player-container');
+            if (playerContainer) {
+                playerContainer.style.setProperty('--glow-intensity', '0.3');
+                console.log('   ✅ Glow intensity reset to 0.3');
             }
         }
     </script>
