@@ -1,7 +1,13 @@
-const CACHE_NAME = 'radio-player-v1';
+const CACHE_NAME = 'radio-player-v3.4';
 const urlsToCache = [
+  './',
   './radio-player.html',
-  './manifest.json'
+  './styles.css',
+  './wave-animation.js',
+  './app.js',
+  './manifest.json',
+  './assets/logos/classicfm.svg',
+  './assets/logos/reprezent.jpg'
 ];
 
 // Install event - cache resources
