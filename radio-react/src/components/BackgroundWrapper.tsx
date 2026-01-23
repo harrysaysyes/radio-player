@@ -1,7 +1,8 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode } from "react";
 import RetroGrid from "@/components/ui/retro-grid";
 import { cn } from "@/lib/utils";
 import { usePlayer } from "@/context/PlayerContext";
+import { useAudioAnalyser } from "@/hooks/useAudioAnalyser";
 
 interface BackgroundWrapperProps {
   children: ReactNode;
@@ -9,30 +10,7 @@ interface BackgroundWrapperProps {
 
 export const BackgroundWrapper = ({ children }: BackgroundWrapperProps) => {
   const { analyserNode, currentTheme } = usePlayer();
-  const [audioEnergy, setAudioEnergy] = useState(0);
-
-  useEffect(() => {
-    if (!analyserNode) return;
-
-    const frequencyData = new Uint8Array(analyserNode.frequencyBinCount);
-    let animationFrameId: number;
-
-    const updateEnergy = () => {
-      analyserNode.getByteFrequencyData(frequencyData);
-
-      // Average bass frequencies (bins 0-10 ≈ 0-200Hz)
-      let bassSum = 0;
-      for (let i = 0; i < 10; i++) {
-        bassSum += frequencyData[i];
-      }
-
-      setAudioEnergy((bassSum / 10) / 255); // Normalize to 0-1
-      animationFrameId = requestAnimationFrame(updateEnergy);
-    };
-
-    updateEnergy();
-    return () => cancelAnimationFrame(animationFrameId);
-  }, [analyserNode]);
+  const audioEnergy = useAudioAnalyser(analyserNode);
 
   // Determine background gradient based on theme
   const getBackgroundStyle = () => {

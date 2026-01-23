@@ -1,5 +1,8 @@
-import React, { createContext, useContext, useState, useRef, ReactNode } from 'react';
-import { Station } from '@/config/stations';
+import React, { createContext, useContext, useState, useRef, ReactNode, useCallback } from 'react';
+import { Station, STATIONS } from '@/config/stations';
+import { useMetadata } from '@/hooks/useMetadata';
+import { useMediaSession } from '@/hooks/useMediaSession';
+import { useWakeLock } from '@/hooks/useWakeLock';
 
 interface PlayerState {
   // Audio
@@ -51,7 +54,63 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
 
+  // Metadata fetching callback
+  const handleTrackUpdate = useCallback((info: string, artist: string) => {
+    setTrackInfo(info);
+    setTrackArtist(artist);
+  }, []);
+
+  // Auto-fetch metadata when playing
+  useMetadata(currentStation, isPlaying, {
+    onTrackUpdate: handleTrackUpdate
+  });
+
+  // Media Session callbacks for lock screen/CarPlay
+  const handleMediaPlay = useCallback(() => {
+    if (audio && !isPlaying) {
+      audio.play();
+      setIsPlaying(true);
+    }
+  }, [audio, isPlaying]);
+
+  const handleMediaPause = useCallback(() => {
+    if (audio && isPlaying) {
+      audio.pause();
+      setIsPlaying(false);
+    }
+  }, [audio, isPlaying]);
+
+  // Store playStation reference for media session callbacks
+  const playStationRef = useRef<((station: Station) => void) | null>(null);
+
+  const handlePreviousTrack = useCallback(() => {
+    if (!currentStation || !playStationRef.current) return;
+    const currentIndex = STATIONS.findIndex(s => s.id === currentStation.id);
+    const prevIndex = currentIndex > 0 ? currentIndex - 1 : STATIONS.length - 1;
+    playStationRef.current(STATIONS[prevIndex]);
+  }, [currentStation]);
+
+  const handleNextTrack = useCallback(() => {
+    if (!currentStation || !playStationRef.current) return;
+    const currentIndex = STATIONS.findIndex(s => s.id === currentStation.id);
+    const nextIndex = currentIndex < STATIONS.length - 1 ? currentIndex + 1 : 0;
+    playStationRef.current(STATIONS[nextIndex]);
+  }, [currentStation]);
+
+  // Setup Media Session for lock screen/CarPlay
+  useMediaSession(currentStation, isPlaying, trackInfo, trackArtist, {
+    onPlay: handleMediaPlay,
+    onPause: handleMediaPause,
+    onPreviousTrack: handlePreviousTrack,
+    onNextTrack: handleNextTrack
+  });
+
+  // Keep screen awake while playing
+  useWakeLock(isPlaying);
+
   const playStation = (station: Station) => {
+    playStationRef.current = playStation;  // Store reference for media session
+
     // Stop current playback
     if (audio) {
       audio.pause();
