@@ -12,18 +12,34 @@
     xGap: 40,              // Horizontal spacing (px)
     yGap: 40,              // Vertical spacing (px)
 
-    // Noise
-    noiseScale: 0.003,     // Spatial frequency
-    noiseSpeed: 0.0002,    // Temporal frequency
-    maxDisplacement: 20,   // Max noise offset (px)
+    // Base Noise
+    noiseScale: 0.003,     // Spatial frequency of base noise
+    noiseSpeed: 0.0002,    // Temporal frequency (animation speed)
+    amplitude: 20,         // Max vertical displacement (px)
+
+    // Vertical Domain Warp (Line Convergence)
+    warpScale: 0.001,      // Spatial frequency of domain warp
+    warpSpeed: 0.0001,     // Temporal frequency of warp
+    warpAmp: 60,           // Strength of domain warp (px)
+
+    // Ridge Noise (Pinch Zones)
+    ridgeScale: 0.002,     // Spatial frequency of ridge noise
+    ridgeSpeed: 0.00015,   // Temporal frequency of ridge
+    ridgePower: 2.0,       // Sharpness exponent (higher = sharper)
+    ridgeStrength: 0.5,    // Multiplier for ridge contribution
+
+    // Secondary Vector Warp
+    vecWarpScale: 0.0015,  // Spatial frequency of vector warp
+    vecWarpAmp: 15,        // Strength of vector warp (px)
 
     // Physics
     springStrength: 0.03,  // Spring restoration force
     friction: 0.85,        // Velocity damping (0-1)
 
-    // Cursor
+    // Cursor Interaction
     influenceRadius: 150,  // Cursor effect radius (px)
-    cursorStrength: 0.5,   // Cursor force multiplier
+    cursorStrength: 0.5,   // Force multiplier
+    velocityMult: 0.3,     // Cursor velocity scaling
 
     // Audio Reactivity
     audioReactivityEnabled: true,
@@ -53,7 +69,8 @@
     velocityY: 0,
     isActive: false,
     influenceRadius: config.influenceRadius,
-    strength: config.cursorStrength
+    strength: config.cursorStrength,
+    velocityMult: config.velocityMult
   };
 
   // Theme system
@@ -123,52 +140,126 @@
 
     // Modulate wave amplitude based on audio energy
     const amplitudeMultiplier = 1.0 + (audioEnergy * config.audioAmplitudeMultiplier);
-    const currentMaxDisplacement = config.maxDisplacement * amplitudeMultiplier;
+    const currentAmplitude = config.amplitude * amplitudeMultiplier;
 
-    // Update each point
+    // Update each point with contour wave field
     for (let i = 0; i < grid.points.length; i++) {
       const point = grid.points[i];
+      const x = point.baseX;
+      const y = point.baseY;
 
-      // 1. Calculate noise displacement with modulated amplitude
-      const noiseValue = simplex.noise3D(
-        point.baseX * config.noiseScale,
-        point.baseY * config.noiseScale,
+      // ===== LAYER 1: Secondary Vector Warp =====
+      // Adds swirling, organic motion to the entire field
+      // Two offset noise fields create a 2D vector field
+      const vWarpX = simplex.noise3D(
+        x * config.vecWarpScale,
+        y * config.vecWarpScale,
+        time + 100  // Offset in time for independent motion
+      );
+      const vWarpY = simplex.noise3D(
+        x * config.vecWarpScale,
+        y * config.vecWarpScale,
+        time + 200  // Different offset for Y component
+      );
+      // Apply vector warp to base coordinates
+      const wx = x + (vWarpX * config.vecWarpAmp);
+      const wy = y + (vWarpY * config.vecWarpAmp);
+
+      // ===== LAYER 2: Vertical Domain Warp (Line Convergence) =====
+      // Warps the Y coordinate before noise sampling
+      // Creates regions where contour lines pinch together or spread apart
+      const domainWarp = simplex.noise3D(
+        wx * config.warpScale,
+        wy * config.warpScale,
+        time * config.warpSpeed
+      );
+      // Apply warp to Y domain only (creates vertical compression/expansion)
+      const warpedY = wy + (domainWarp * config.warpAmp);
+
+      // ===== LAYER 3: Base Noise Displacement =====
+      // Primary vertical displacement using warped coordinates
+      // Angle-based conversion ensures smooth, continuous motion
+      const baseNoise = simplex.noise3D(
+        wx * config.noiseScale,
+        warpedY * config.noiseScale,  // Use warped Y for convergence effect
         time
       );
-      const angle = noiseValue * Math.PI;
-      const noiseX = Math.cos(angle) * currentMaxDisplacement;
-      const noiseY = Math.sin(angle) * currentMaxDisplacement;
+      const angle = baseNoise * Math.PI;
+      // Vertical displacement only - X stays fixed for horizontal contours
+      const baseDisp = Math.sin(angle) * currentAmplitude;
 
-      // 2. Calculate cursor force (if pointer is active)
-      let forceX = 0;
-      let forceY = 0;
+      // ===== LAYER 4: Ridge Noise (Pinch Zones) =====
+      // Absolute value creates sharp ridges (topographic peaks)
+      // Higher power creates sharper, more pronounced ridges
+      const ridgeNoise = Math.abs(simplex.noise3D(
+        wx * config.ridgeScale,
+        wy * config.ridgeScale,
+        time * config.ridgeSpeed
+      ));
+      // Raise to power for sharpness control
+      const ridgeValue = Math.pow(ridgeNoise, config.ridgePower);
+      // Ridge modulates the base displacement
+      const ridgeDisp = baseDisp * ridgeValue * config.ridgeStrength;
+
+      // ===== COMBINED DISPLACEMENT =====
+      // Final noise-based vertical displacement
+      const totalNoiseDisp = baseDisp + ridgeDisp;
+
+      // ===== CURSOR VELOCITY INJECTION =====
+      // Inject cursor velocity into point velocity (elastic interaction)
+      // NOT direct force - velocity creates momentum and oscillation
       if (pointer.isActive) {
         const dx = point.currentX - pointer.x;
         const dy = point.currentY - pointer.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance < pointer.influenceRadius && distance > 0) {
-          const force = (1 - distance / pointer.influenceRadius) * pointer.strength;
-          forceX = (dx / distance) * force;
-          forceY = (dy / distance) * force;
+          // Quadratic falloff for smooth, natural influence
+          const normalizedDist = distance / pointer.influenceRadius;
+          const falloff = 1 - (normalizedDist * normalizedDist);
+
+          // Direction away from cursor (repulsion)
+          const dirX = dx / distance;
+          const dirY = dy / distance;
+
+          // Inject velocity based on cursor motion and distance
+          // Fast cursor creates large velocity injection
+          const velocityInjection = falloff * pointer.strength * config.velocityMult;
+          point.velocityX += dirX * velocityInjection * pointer.velocityX;
+          point.velocityY += dirY * velocityInjection * pointer.velocityY;
         }
       }
 
-      // 3. Calculate spring force back to rest position
-      const restX = point.baseX + noiseX;
-      const restY = point.baseY + noiseY;
+      // ===== SPRING PHYSICS =====
+      // Rest position = base position + noise displacement
+      // X rest position is always baseX (no horizontal drift)
+      const restX = point.baseX;
+      const restY = point.baseY + totalNoiseDisp;
+
+      // Spring force pulls point back to rest position
       const springX = (restX - point.currentX) * config.springStrength;
       const springY = (restY - point.currentY) * config.springStrength;
 
-      // 4. Update velocity
-      point.velocityX += forceX + springX;
-      point.velocityY += forceY + springY;
+      // ===== VELOCITY INTEGRATION =====
+      // Add spring force to velocity
+      point.velocityX += springX;
+      point.velocityY += springY;
+
+      // Apply friction damping
       point.velocityX *= config.friction;
       point.velocityY *= config.friction;
 
-      // 5. Update position
+      // Integrate velocity to position
       point.currentX += point.velocityX;
       point.currentY += point.velocityY;
+
+      // ===== DISPLACEMENT CLAMPING =====
+      // Prevent extreme outliers from cursor interaction
+      const maxOffset = currentAmplitude * 3;
+      point.currentY = Math.max(
+        point.baseY - maxOffset,
+        Math.min(point.baseY + maxOffset, point.currentY)
+      );
     }
   }
 
