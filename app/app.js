@@ -130,6 +130,7 @@ function playStream(url, urlAlt = null) {
     stopMetadataUpdates();
 
     audio = new Audio(url);
+    audio.crossOrigin = "anonymous";  // Required for Web Audio API with CORS
     audio.volume = volumeSlider.value / 100;
 
     // Setup Web Audio API for audio reactivity
@@ -147,9 +148,29 @@ function playStream(url, urlAlt = null) {
             sourceNode = audioContext.createMediaElementSource(audio);
             sourceNode.connect(analyserNode);
             analyserNode.connect(audioContext.destination);
+            console.log('✓ Web Audio API connected successfully - audio reactivity enabled');
         } catch (err) {
-            console.log('Web Audio API connection error (likely already connected):', err);
+            console.error('✗ Web Audio API connection failed:', err.message);
+            console.error('  This may be due to:');
+            console.error('  - CORS restrictions (stream must allow cross-origin access)');
+            console.error('  - Audio element already connected to another source');
+            console.error('  Audio reactivity will be disabled for this stream.');
+            sourceNode = null;  // Reset to allow retry on next stream
         }
+    }
+
+    // Validate audio reactivity is working (for debugging)
+    if (sourceNode && analyserNode) {
+        setTimeout(() => {
+            const testData = new Uint8Array(analyserNode.frequencyBinCount);
+            analyserNode.getByteFrequencyData(testData);
+            const hasData = testData.some(value => value > 0);
+            if (hasData) {
+                console.log('✓ Audio reactivity confirmed - wave animation will respond to music');
+            } else {
+                console.warn('⚠ Audio reactivity not detecting signal - waves will animate at default speed');
+            }
+        }, 500);  // Wait 500ms for audio to start
     }
 
     let hasTriedAlt = false;
@@ -200,6 +221,7 @@ function playStream(url, urlAlt = null) {
             updateStatus('Trying alternative stream...', true);
 
             audio = new Audio(urlAlt);
+            audio.crossOrigin = "anonymous";  // Required for Web Audio API with CORS
             audio.volume = volumeSlider.value / 100;
 
             // Re-attach event listeners for the new audio element
