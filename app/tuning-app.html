@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contour Wave Field - Parameter Tuning</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            background: #0a0a0a;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .control-panel {
+            width: 400px;
+            background: #1a1a1a;
+            border-left: 1px solid #333;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #8b4cf6;
+        }
+
+        h2 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            color: #a0a0a0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .param-group {
+            margin-bottom: 20px;
+        }
+
+        .param {
+            margin-bottom: 12px;
+        }
+
+        .param-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+
+        .param-name {
+            color: #c0c0c0;
+        }
+
+        .param-value {
+            color: #8b4cf6;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            background: #333;
+            outline: none;
+            border-radius: 2px;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #8b4cf6;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            background: #8b4cf6;
+            cursor: pointer;
+            border-radius: 50%;
+            border: none;
+        }
+
+        .info {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+            font-style: italic;
+        }
+
+        .export-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #8b4cf6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #7c3fdb;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            margin-top: 10px;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="canvas-container">
+            <canvas id="waveCanvas"></canvas>
+        </div>
+
+        <div class="control-panel">
+            <h1>Contour Wave Field Tuner</h1>
+            <p style="font-size: 12px; color: #888; margin-bottom: 20px;">
+                Adjust parameters in real-time to tune the wave field appearance.
+            </p>
+
+            <h2>Grid</h2>
+            <div class="param-group">
+                <div class="param">
+                    <div class="param-label">
+                        <span class="param-name">X Gap</span>
+                        <span class="param-value" id="xGap-value">40</span>
+                    </div>
+                    <input type="range" id="xGap" min="20" max="80" step="5" value="40">
+                    <div class="info">Horizontal spacing between points (px)</div>
+                </div>
+                <div class="param">
+                    <div class="param-label">
+                        <span class="param-name">Y Gap</span>
+                        <span class="param-value" id="yGap-value">40</span>
+                    </div>
+                    <input type="range" id="yGap" min="20" max="80" step="5" value="40">
+                    <div class="info">Vertical spacing between lines (px)</div>
+                </div>
+            </div>
+
+            <h2>Base Noise</h2>
+            <div class="param-group">
+                <div class="param">
+                    <div class="param-label">
+                        <span class="param-name">Noise Scale</span>
+                        <span class="param-value" id="noiseScale-value">0.003</span>
+                    </div>
+                    <input type="range" id="noiseScale" min="0.001" max="0.01" step="0.0001" value="0.003">
+                    <div class="info">Spatial frequency of base noise</div>
+                </div>
+                <div class="param">
+                    <div class="param-label">
+                        <span class="param-name">Noise Speed</span>
+                        <span class="param-value" id="noiseSpeed-value">0.0002</span>
+                    </div>
+                    <input type="range" id="noiseSpeed" min="0.00001" max="0.001" step="0.00001" value="0.0002">
+                    <div class="info">Animation speed (temporal frequency)</div>
+                </div>
+                <div class="param">
+                    <div class="param-label">
+                        <span class="param-name">Amplitude</span>
+                        <span class="param-value" id="amplitude-value">20</span>
+                    </div>
+                    <input type="range" id="amplitude" min="5" max="50" step="1" value="20">
+                    <div class="info">Maximum vertical displacement (px)</div>
+                </div>
+            </div>
+
+            <h2>Domain Warp (Line Convergence)</h2>
+            <div class="param-group">
+                <div class="param">
+                    <div class="param-label">
+                        <span class="param-name">Warp Scale</span>
+                        <span class="param-value" id="warpScale-value">0.001</span>
+                    </div>
+                    <input type="range" id="warpScale" min="0.0001" max="0.005" step="0.0001" value="0.001">
+                    <div class="info">Spatial frequency of domain warp</div>
+                </div>
+                <div class="param">
+                    <div class="param-label">
+                        <span class="param-name">Warp Speed</span>
+                        <span class="param-value" id="warpSpeed-value">0.0001</span>
+                    </div>
+                    <input type="range" id="warpSpeed" min="0.00001" max="0.0005" step="0.00001" value="0.0001">
+                    <div class="info">Temporal frequency of warp</div>
+                </div>
+                <div class="param">
+                    <div class="param-label">
+                        <span class="param-name">Warp Amplitude</span>
+                        <span class="param-value" id="warpAmp-value">60</span>
+                    </div>
+                    <input type="range" id="warpAmp" min="0" max="150" step="5" value="60">
+                    <div class="info">Strength of domain warp (px)</div>
+                </div>
+            </div>
+
+            <h2>Ridge Noise (Pinch Zones)</h2>
+            <div class="param-group">
+                <div class="param">
+                    <div class="param-label">
+                        <span class="param-name">Ridge Scale</span>
+                        <span class="param-value" id="ridgeScale-value">0.002</span>
+                    </div>
+                    <input type="range" id="ridgeScale" min="0.0001" max="0.01" step="0.0001" value="0.002">
+                    <div class="info">Spatial frequency of ridge noise</div>
+                </div>
+                <div class="param">
+                    <div class="param-label">
+                        <span class="param-name">Ridge Speed</span>
+                        <span class="param-value" id="ridgeSpeed-value">0.00015</span>
+                    </div>
+                    <input type="range" id="ridgeSpeed" min="0.00001" max="0.0005" step="0.00001" value="0.00015">
+                    <div class="info">Temporal frequency of ridge</div>
+                </div>
+                <div class="param">
+                    <div class="param-label">
+                        <span class="param-name">Ridge Power</span>
+                        <span class="param-value" id="ridgePower-value">2.0</span>
+                    </div>
+                    <input type="range" id="ridgePower" min="1.0" max="4.0" step="0.1" value="2.0">
+                    <div class="info">Sharpness exponent (higher = sharper)</div>
+                </div>
+                <div class="param">
+                    <div class="param-label">
+                        <span class="param-name">Ridge Strength</span>
+                        <span class="param-value" id="ridgeStrength-value">0.5</span>
+                    </div>
+                    <input type="range" id="ridgeStrength" min="0" max="2" step="0.1" value="0.5">
+                    <div class="info">Multiplier for ridge contribution</div>
+                </div>
+            </div>
+
+            <h2>Vector Warp</h2>
+            <div class="param-group">
+                <div class="param">
+                    <div class="param-label">
+                        <span class="param-name">Vector Warp Scale</span>
+                        <span class="param-value" id="vecWarpScale-value">0.0015</span>
+                    </div>
+                    <input type="range" id="vecWarpScale" min="0.0001" max="0.005" step="0.0001" value="0.0015">
+                    <div class="info">Spatial frequency of vector warp</div>
+                </div>
+                <div class="param">
+                    <div class="param-label">
+                        <span class="param-name">Vector Warp Amplitude</span>
+                        <span class="param-value" id="vecWarpAmp-value">15</span>
+                    </div>
+                    <input type="range" id="vecWarpAmp" min="0" max="50" step="1" value="15">
+                    <div class="info">Strength of vector warp (px)</div>
+                </div>
+            </div>
+
+            <h2>Physics</h2>
+            <div class="param-group">
+                <div class="param">
+                    <div class="param-label">
+                        <span class="param-name">Spring Strength</span>
+                        <span class="param-value" id="springStrength-value">0.03</span>
+                    </div>
+                    <input type="range" id="springStrength" min="0.001" max="0.1" step="0.001" value="0.03">
+                    <div class="info">Spring restoration force</div>
+                </div>
+                <div class="param">
+                    <div class="param-label">
+                        <span class="param-name">Friction</span>
+                        <span class="param-value" id="friction-value">0.85</span>
+                    </div>
+                    <input type="range" id="friction" min="0.5" max="0.99" step="0.01" value="0.85">
+                    <div class="info">Velocity damping (0-1)</div>
+                </div>
+            </div>
+
+            <h2>Cursor Interaction</h2>
+            <div class="param-group">
+                <div class="param">
+                    <div class="param-label">
+                        <span class="param-name">Influence Radius</span>
+                        <span class="param-value" id="influenceRadius-value">150</span>
+                    </div>
+                    <input type="range" id="influenceRadius" min="50" max="300" step="10" value="150">
+                    <div class="info">Cursor effect radius (px)</div>
+                </div>
+                <div class="param">
+                    <div class="param-label">
+                        <span class="param-name">Cursor Strength</span>
+                        <span class="param-value" id="cursorStrength-value">0.5</span>
+                    </div>
+                    <input type="range" id="cursorStrength" min="0" max="2" step="0.1" value="0.5">
+                    <div class="info">Force multiplier</div>
+                </div>
+                <div class="param">
+                    <div class="param-label">
+                        <span class="param-name">Velocity Multiplier</span>
+                        <span class="param-value" id="velocityMult-value">0.3</span>
+                    </div>
+                    <input type="range" id="velocityMult" min="0" max="1" step="0.05" value="0.3">
+                    <div class="info">Cursor velocity scaling</div>
+                </div>
+            </div>
+
+            <div class="export-section">
+                <button id="exportBtn">Export Configuration</button>
+                <textarea id="exportOutput" placeholder="Click Export to generate JSON config..." readonly></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== SIMPLEX NOISE IMPLEMENTATION =====
+        const simplex = (function() {
+            'use strict';
+
+            const grad3 = [
+                [1,1,0],[-1,1,0],[1,-1,0],[-1,-1,0],
+                [1,0,1],[-1,0,1],[1,0,-1],[-1,0,-1],
+                [0,1,1],[0,-1,1],[0,1,-1],[0,-1,-1]
+            ];
+
+            const p = [];
+            for (let i = 0; i < 256; i++) {
+                p[i] = Math.floor(Math.random() * 256);
+            }
+
+            const perm = [];
+            const permMod12 = [];
+            for (let i = 0; i < 512; i++) {
+                perm[i] = p[i & 255];
+                permMod12[i] = perm[i] % 12;
+            }
+
+            const F3 = 1.0 / 3.0;
+            const G3 = 1.0 / 6.0;
+
+            function noise3D(xin, yin, zin) {
+                let n0, n1, n2, n3;
+
+                const s = (xin + yin + zin) * F3;
+                const i = Math.floor(xin + s);
+                const j = Math.floor(yin + s);
+                const k = Math.floor(zin + s);
+
+                const t = (i + j + k) * G3;
+                const X0 = i - t;
+                const Y0 = j - t;
+                const Z0 = k - t;
+                const x0 = xin - X0;
+                const y0 = yin - Y0;
+                const z0 = zin - Z0;
+
+                let i1, j1, k1;
+                let i2, j2, k2;
+
+                if (x0 >= y0) {
+                    if (y0 >= z0) {
+                        i1 = 1; j1 = 0; k1 = 0; i2 = 1; j2 = 1; k2 = 0;
+                    } else if (x0 >= z0) {
+                        i1 = 1; j1 = 0; k1 = 0; i2 = 1; j2 = 0; k2 = 1;
+                    } else {
+                        i1 = 0; j1 = 0; k1 = 1; i2 = 1; j2 = 0; k2 = 1;
+                    }
+                } else {
+                    if (y0 < z0) {
+                        i1 = 0; j1 = 0; k1 = 1; i2 = 0; j2 = 1; k2 = 1;
+                    } else if (x0 < z0) {
+                        i1 = 0; j1 = 1; k1 = 0; i2 = 0; j2 = 1; k2 = 1;
+                    } else {
+                        i1 = 0; j1 = 1; k1 = 0; i2 = 1; j2 = 1; k2 = 0;
+                    }
+                }
+
+                const x1 = x0 - i1 + G3;
+                const y1 = y0 - j1 + G3;
+                const z1 = z0 - k1 + G3;
+                const x2 = x0 - i2 + 2.0 * G3;
+                const y2 = y0 - j2 + 2.0 * G3;
+                const z2 = z0 - k2 + 2.0 * G3;
+                const x3 = x0 - 1.0 + 3.0 * G3;
+                const y3 = y0 - 1.0 + 3.0 * G3;
+                const z3 = z0 - 1.0 + 3.0 * G3;
+
+                const ii = i & 255;
+                const jj = j & 255;
+                const kk = k & 255;
+                const gi0 = permMod12[ii + perm[jj + perm[kk]]];
+                const gi1 = permMod12[ii + i1 + perm[jj + j1 + perm[kk + k1]]];
+                const gi2 = permMod12[ii + i2 + perm[jj + j2 + perm[kk + k2]]];
+                const gi3 = permMod12[ii + 1 + perm[jj + 1 + perm[kk + 1]]];
+
+                let t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0;
+                if (t0 < 0) {
+                    n0 = 0.0;
+                } else {
+                    t0 *= t0;
+                    n0 = t0 * t0 * dot(grad3[gi0], x0, y0, z0);
+                }
+
+                let t1 = 0.6 - x1 * x1 - y1 * y1 - z1 * z1;
+                if (t1 < 0) {
+                    n1 = 0.0;
+                } else {
+                    t1 *= t1;
+                    n1 = t1 * t1 * dot(grad3[gi1], x1, y1, z1);
+                }
+
+                let t2 = 0.6 - x2 * x2 - y2 * y2 - z2 * z2;
+                if (t2 < 0) {
+                    n2 = 0.0;
+                } else {
+                    t2 *= t2;
+                    n2 = t2 * t2 * dot(grad3[gi2], x2, y2, z2);
+                }
+
+                let t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3;
+                if (t3 < 0) {
+                    n3 = 0.0;
+                } else {
+                    t3 *= t3;
+                    n3 = t3 * t3 * dot(grad3[gi3], x3, y3, z3);
+                }
+
+                return 32.0 * (n0 + n1 + n2 + n3);
+            }
+
+            function dot(g, x, y, z) {
+                return g[0] * x + g[1] * y + g[2] * z;
+            }
+
+            return { noise3D };
+        })();
+
+        // ===== WAVE GRID ENGINE =====
+        const config = {
+            xGap: 40,
+            yGap: 40,
+            noiseScale: 0.003,
+            noiseSpeed: 0.0002,
+            amplitude: 20,
+            warpScale: 0.001,
+            warpSpeed: 0.0001,
+            warpAmp: 60,
+            ridgeScale: 0.002,
+            ridgeSpeed: 0.00015,
+            ridgePower: 2.0,
+            ridgeStrength: 0.5,
+            vecWarpScale: 0.0015,
+            vecWarpAmp: 15,
+            springStrength: 0.03,
+            friction: 0.85,
+            influenceRadius: 150,
+            cursorStrength: 0.5,
+            velocityMult: 0.3
+        };
+
+        let canvas, ctx;
+        let time = 0;
+        let lastTime = 0;
+        let needsRebuild = false;
+
+        const grid = {
+            points: [],
+            rows: 0,
+            cols: 0
+        };
+
+        const pointer = {
+            x: 0,
+            y: 0,
+            velocityX: 0,
+            velocityY: 0,
+            isActive: false
+        };
+
+        function initGrid() {
+            const cols = Math.ceil(canvas.width / config.xGap) + 1;
+            const rows = Math.ceil(canvas.height / config.yGap) + 1;
+
+            grid.cols = cols;
+            grid.rows = rows;
+            grid.points = [];
+
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    grid.points.push({
+                        baseX: col * config.xGap,
+                        baseY: row * config.yGap,
+                        currentX: col * config.xGap,
+                        currentY: row * config.yGap,
+                        velocityX: 0,
+                        velocityY: 0
+                    });
+                }
+            }
+        }
+
+        function update(deltaTime) {
+            time += deltaTime * config.noiseSpeed;
+
+            // Check if grid needs rebuild due to gap changes
+            if (needsRebuild) {
+                initGrid();
+                needsRebuild = false;
+            }
+
+            for (let i = 0; i < grid.points.length; i++) {
+                const point = grid.points[i];
+                const x = point.baseX;
+                const y = point.baseY;
+
+                // Layer 1: Secondary Vector Warp
+                const vWarpX = simplex.noise3D(
+                    x * config.vecWarpScale,
+                    y * config.vecWarpScale,
+                    time + 100
+                );
+                const vWarpY = simplex.noise3D(
+                    x * config.vecWarpScale,
+                    y * config.vecWarpScale,
+                    time + 200
+                );
+                const wx = x + (vWarpX * config.vecWarpAmp);
+                const wy = y + (vWarpY * config.vecWarpAmp);
+
+                // Layer 2: Vertical Domain Warp
+                const domainWarp = simplex.noise3D(
+                    wx * config.warpScale,
+                    wy * config.warpScale,
+                    time * config.warpSpeed
+                );
+                const warpedY = wy + (domainWarp * config.warpAmp);
+
+                // Layer 3: Base Noise Displacement
+                const baseNoise = simplex.noise3D(
+                    wx * config.noiseScale,
+                    warpedY * config.noiseScale,
+                    time
+                );
+                const angle = baseNoise * Math.PI;
+                const baseDisp = Math.sin(angle) * config.amplitude;
+
+                // Layer 4: Ridge Noise
+                const ridgeNoise = Math.abs(simplex.noise3D(
+                    wx * config.ridgeScale,
+                    wy * config.ridgeScale,
+                    time * config.ridgeSpeed
+                ));
+                const ridgeValue = Math.pow(ridgeNoise, config.ridgePower);
+                const ridgeDisp = baseDisp * ridgeValue * config.ridgeStrength;
+
+                const totalNoiseDisp = baseDisp + ridgeDisp;
+
+                // Cursor Velocity Injection
+                if (pointer.isActive) {
+                    const dx = point.currentX - pointer.x;
+                    const dy = point.currentY - pointer.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < config.influenceRadius && distance > 0) {
+                        const normalizedDist = distance / config.influenceRadius;
+                        const falloff = 1 - (normalizedDist * normalizedDist);
+
+                        const dirX = dx / distance;
+                        const dirY = dy / distance;
+
+                        const velocityInjection = falloff * config.cursorStrength * config.velocityMult;
+                        point.velocityX += dirX * velocityInjection * pointer.velocityX;
+                        point.velocityY += dirY * velocityInjection * pointer.velocityY;
+                    }
+                }
+
+                // Spring Physics
+                const restX = point.baseX;
+                const restY = point.baseY + totalNoiseDisp;
+
+                const springX = (restX - point.currentX) * config.springStrength;
+                const springY = (restY - point.currentY) * config.springStrength;
+
+                point.velocityX += springX;
+                point.velocityY += springY;
+                point.velocityX *= config.friction;
+                point.velocityY *= config.friction;
+                point.currentX += point.velocityX;
+                point.currentY += point.velocityY;
+
+                // Displacement Clamping
+                const maxOffset = config.amplitude * 3;
+                point.currentY = Math.max(
+                    point.baseY - maxOffset,
+                    Math.min(point.baseY + maxOffset, point.currentY)
+                );
+            }
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = 'rgba(139, 76, 246, 0.3)';
+            ctx.lineWidth = 1;
+
+            for (let row = 0; row < grid.rows; row++) {
+                ctx.beginPath();
+
+                const rowPoints = [];
+                for (let col = 0; col < grid.cols; col++) {
+                    rowPoints.push(grid.points[row * grid.cols + col]);
+                }
+
+                if (rowPoints.length < 2) continue;
+
+                ctx.moveTo(rowPoints[0].currentX, rowPoints[0].currentY);
+
+                for (let i = 0; i < rowPoints.length - 1; i++) {
+                    const p0 = rowPoints[i];
+                    const p1 = rowPoints[i + 1];
+
+                    const cx = p0.currentX;
+                    const cy = p0.currentY;
+                    const midX = (p0.currentX + p1.currentX) / 2;
+                    const midY = (p0.currentY + p1.currentY) / 2;
+
+                    ctx.quadraticCurveTo(cx, cy, midX, midY);
+                }
+
+                const lastPoint = rowPoints[rowPoints.length - 1];
+                ctx.lineTo(lastPoint.currentX, lastPoint.currentY);
+
+                ctx.stroke();
+            }
+        }
+
+        function animate(currentTime) {
+            const deltaTime = currentTime - lastTime;
+            lastTime = currentTime;
+
+            update(deltaTime);
+            draw();
+
+            requestAnimationFrame(animate);
+        }
+
+        function resize() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            initGrid();
+        }
+
+        // ===== PARAMETER CONTROLS =====
+        const params = [
+            'xGap', 'yGap', 'noiseScale', 'noiseSpeed', 'amplitude',
+            'warpScale', 'warpSpeed', 'warpAmp',
+            'ridgeScale', 'ridgeSpeed', 'ridgePower', 'ridgeStrength',
+            'vecWarpScale', 'vecWarpAmp',
+            'springStrength', 'friction',
+            'influenceRadius', 'cursorStrength', 'velocityMult'
+        ];
+
+        function setupControls() {
+            params.forEach(param => {
+                const slider = document.getElementById(param);
+                const valueDisplay = document.getElementById(`${param}-value`);
+
+                slider.addEventListener('input', (e) => {
+                    const value = parseFloat(e.target.value);
+                    config[param] = value;
+                    valueDisplay.textContent = value;
+
+                    // Mark for grid rebuild if spacing changed
+                    if (param === 'xGap' || param === 'yGap') {
+                        needsRebuild = true;
+                    }
+                });
+            });
+
+            // Export button
+            document.getElementById('exportBtn').addEventListener('click', () => {
+                const exportData = {
+                    xGap: config.xGap,
+                    yGap: config.yGap,
+                    noiseScale: config.noiseScale,
+                    noiseSpeed: config.noiseSpeed,
+                    amplitude: config.amplitude,
+                    warpScale: config.warpScale,
+                    warpSpeed: config.warpSpeed,
+                    warpAmp: config.warpAmp,
+                    ridgeScale: config.ridgeScale,
+                    ridgeSpeed: config.ridgeSpeed,
+                    ridgePower: config.ridgePower,
+                    ridgeStrength: config.ridgeStrength,
+                    vecWarpScale: config.vecWarpScale,
+                    vecWarpAmp: config.vecWarpAmp,
+                    springStrength: config.springStrength,
+                    friction: config.friction,
+                    influenceRadius: config.influenceRadius,
+                    cursorStrength: config.cursorStrength,
+                    velocityMult: config.velocityMult
+                };
+
+                const output = document.getElementById('exportOutput');
+
+                // Generate complete usage instructions
+                const instructions = `// ===== CONTOUR WAVE CONFIGURATION =====
+// Generated from tuning-app.html
+// Copy this config object into wave-grid.js (lines 10-48)
+
+const config = ${JSON.stringify(exportData, null, 2)};
+
+// ===== FIELD MAPPING TO MATHEMATICAL TERMS =====
+//
+// Grid Spacing:
+//   xGap, yGap          → Horizontal and vertical spacing between grid points
+//
+// Layer 1 - Secondary Vector Warp (Swirling Motion):
+//   vecWarpScale        → Spatial frequency of vector warp noise
+//   vecWarpAmp          → Strength of 2D vector displacement (px)
+//
+// Layer 2 - Vertical Domain Warp (Line Convergence):
+//   warpScale           → Spatial frequency of domain warp noise
+//   warpSpeed           → Temporal frequency (how fast convergence changes)
+//   warpAmp             → Strength of Y-coordinate warping (px)
+//
+// Layer 3 - Base Noise Displacement (Primary Wave Motion):
+//   noiseScale          → Spatial frequency of base noise field
+//   noiseSpeed          → Temporal frequency (overall animation speed)
+//   amplitude           → Maximum vertical displacement (px)
+//
+// Layer 4 - Ridge Noise (Sharp Pinch Zones):
+//   ridgeScale          → Spatial frequency of ridge noise
+//   ridgeSpeed          → Temporal frequency of ridge motion
+//   ridgePower          → Sharpness exponent (higher = sharper ridges)
+//   ridgeStrength       → Multiplier for ridge contribution (0-2)
+//
+// Spring Physics:
+//   springStrength      → Restoration force coefficient
+//   friction            → Velocity damping (0-1, higher = less damping)
+//
+// Cursor Interaction:
+//   influenceRadius     → Radius of cursor effect (px)
+//   cursorStrength      → Force multiplier for velocity injection
+//   velocityMult        → Cursor velocity scaling factor
+//
+// ===== USAGE INSTRUCTIONS =====
+//
+// 1. Open wave-grid.js
+// 2. Replace the config object (lines 10-48) with the generated config above
+// 3. Save the file
+// 4. Reload radio-player.html to see the changes
+//
+// Notes:
+// - All frequency values (Scale/Speed) are in noise space units
+// - Lower Scale = larger features, Higher Scale = more detail
+// - Lower Speed = slower animation, Higher Speed = faster motion
+// - Amplitude controls the base wave height
+// - Domain warp creates line convergence (topographic effect)
+// - Ridge noise creates sharp compression zones
+// - Vector warp adds swirling, organic motion`;
+
+                output.value = instructions;
+            });
+        }
+
+        // ===== INITIALIZATION =====
+        window.addEventListener('DOMContentLoaded', () => {
+            canvas = document.getElementById('waveCanvas');
+            ctx = canvas.getContext('2d');
+
+            resize();
+            setupControls();
+
+            // Pointer tracking
+            canvas.addEventListener('pointermove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const newX = e.clientX - rect.left;
+                const newY = e.clientY - rect.top;
+
+                pointer.velocityX = newX - pointer.x;
+                pointer.velocityY = newY - pointer.y;
+                pointer.x = newX;
+                pointer.y = newY;
+                pointer.isActive = true;
+            });
+
+            canvas.addEventListener('pointerleave', () => {
+                pointer.isActive = false;
+            });
+
+            canvas.addEventListener('pointerenter', () => {
+                pointer.isActive = true;
+            });
+
+            window.addEventListener('resize', resize);
+
+            requestAnimationFrame(animate);
+        });
+    </script>
+</body>
+</html>
