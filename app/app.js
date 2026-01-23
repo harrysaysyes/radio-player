@@ -129,6 +129,16 @@ function playStream(url, urlAlt = null) {
 
     stopMetadataUpdates();
 
+    // Clean up previous Web Audio connections
+    if (sourceNode) {
+        try {
+            sourceNode.disconnect();
+        } catch (e) {
+            // Already disconnected, ignore
+        }
+        sourceNode = null;
+    }
+
     audio = new Audio(url);
     audio.crossOrigin = "anonymous";  // Required for Web Audio API with CORS
     audio.volume = volumeSlider.value / 100;
@@ -143,7 +153,8 @@ function playStream(url, urlAlt = null) {
     }
 
     // Connect audio element to analyser
-    if (audio && !sourceNode) {
+    // Note: sourceNode was reset to null above, so we always create a fresh connection
+    if (audio) {
         try {
             sourceNode = audioContext.createMediaElementSource(audio);
             sourceNode.connect(analyserNode);
@@ -220,9 +231,32 @@ function playStream(url, urlAlt = null) {
             console.log('Trying alternative URL:', urlAlt);
             updateStatus('Trying alternative stream...', true);
 
+            // Clean up previous Web Audio connections
+            if (sourceNode) {
+                try {
+                    sourceNode.disconnect();
+                } catch (e) {
+                    // Already disconnected, ignore
+                }
+                sourceNode = null;
+            }
+
             audio = new Audio(urlAlt);
             audio.crossOrigin = "anonymous";  // Required for Web Audio API with CORS
             audio.volume = volumeSlider.value / 100;
+
+            // Connect fallback audio to analyser
+            if (audio && audioContext) {
+                try {
+                    sourceNode = audioContext.createMediaElementSource(audio);
+                    sourceNode.connect(analyserNode);
+                    analyserNode.connect(audioContext.destination);
+                    console.log('✓ Web Audio API connected successfully (fallback stream) - audio reactivity enabled');
+                } catch (err) {
+                    console.error('✗ Web Audio API connection failed (fallback):', err.message);
+                    sourceNode = null;
+                }
+            }
 
             // Re-attach event listeners for the new audio element
             audio.addEventListener('playing', () => {
