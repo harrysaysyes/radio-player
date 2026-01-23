@@ -23,7 +23,13 @@
 
     // Cursor
     influenceRadius: 150,  // Cursor effect radius (px)
-    cursorStrength: 0.5    // Cursor force multiplier
+    cursorStrength: 0.5,   // Cursor force multiplier
+
+    // Audio Reactivity
+    audioReactivityEnabled: true,
+    audioSpeedMultiplier: 2.0,      // Max speed increase (1x to 3x)
+    audioAmplitudeMultiplier: 2.0,  // Max amplitude increase (1x to 3x)
+    audioSmoothingFactor: 0.15      // EMA smoothing (lower = smoother)
   };
 
   // ===== STATE =====
@@ -67,6 +73,9 @@
     }
   };
 
+  // Audio reactivity
+  let smoothedAudioEnergy = 0;
+
   // ===== GRID INITIALIZATION =====
   function initGrid(canvasElement) {
     const cols = Math.ceil(canvasElement.width / config.xGap) + 1;
@@ -91,23 +100,44 @@
     }
   }
 
+  // ===== AUDIO REACTIVITY =====
+  function smoothAudioEnergy(rawEnergy) {
+    // Exponential moving average (EMA) for smooth audio response
+    const alpha = config.audioSmoothingFactor;
+    smoothedAudioEnergy = (alpha * rawEnergy) + ((1 - alpha) * smoothedAudioEnergy);
+    return smoothedAudioEnergy;
+  }
+
   // ===== ANIMATION LOOP =====
   function update(deltaTime) {
-    time += deltaTime * config.noiseSpeed;
+    // Get current audio energy (0-1) and smooth it
+    let audioEnergy = 0;
+    if (config.audioReactivityEnabled && typeof window.getAudioEnergy === 'function') {
+      audioEnergy = window.getAudioEnergy();
+      audioEnergy = smoothAudioEnergy(audioEnergy);
+    }
+
+    // Modulate animation speed based on audio energy
+    const speedMultiplier = 1.0 + (audioEnergy * config.audioSpeedMultiplier);
+    time += deltaTime * config.noiseSpeed * speedMultiplier;
+
+    // Modulate wave amplitude based on audio energy
+    const amplitudeMultiplier = 1.0 + (audioEnergy * config.audioAmplitudeMultiplier);
+    const currentMaxDisplacement = config.maxDisplacement * amplitudeMultiplier;
 
     // Update each point
     for (let i = 0; i < grid.points.length; i++) {
       const point = grid.points[i];
 
-      // 1. Calculate noise displacement
+      // 1. Calculate noise displacement with modulated amplitude
       const noiseValue = simplex.noise3D(
         point.baseX * config.noiseScale,
         point.baseY * config.noiseScale,
         time
       );
       const angle = noiseValue * Math.PI;
-      const noiseX = Math.cos(angle) * config.maxDisplacement;
-      const noiseY = Math.sin(angle) * config.maxDisplacement;
+      const noiseX = Math.cos(angle) * currentMaxDisplacement;
+      const noiseY = Math.sin(angle) * currentMaxDisplacement;
 
       // 2. Calculate cursor force (if pointer is active)
       let forceX = 0;
@@ -149,20 +179,42 @@
     context.fillStyle = theme.background;
     context.fillRect(0, 0, context.canvas.width, context.canvas.height);
 
-    // Draw grid as horizontal polylines
+    // Draw grid as smooth curved lines using quadratic curves
     context.strokeStyle = theme.lineColor;
     context.lineWidth = 1;
 
     for (let row = 0; row < grid.rows; row++) {
       context.beginPath();
+
+      // Collect all points for this row
+      const rowPoints = [];
       for (let col = 0; col < grid.cols; col++) {
-        const point = grid.points[row * grid.cols + col];
-        if (col === 0) {
-          context.moveTo(point.currentX, point.currentY);
-        } else {
-          context.lineTo(point.currentX, point.currentY);
-        }
+        rowPoints.push(grid.points[row * grid.cols + col]);
       }
+
+      if (rowPoints.length < 2) continue;
+
+      // Start at first point
+      context.moveTo(rowPoints[0].currentX, rowPoints[0].currentY);
+
+      // Use quadratic curves for smooth interpolation between points
+      for (let i = 0; i < rowPoints.length - 1; i++) {
+        const p0 = rowPoints[i];
+        const p1 = rowPoints[i + 1];
+
+        // Control point is the current point, curve to midpoint
+        const cx = p0.currentX;
+        const cy = p0.currentY;
+        const midX = (p0.currentX + p1.currentX) / 2;
+        const midY = (p0.currentY + p1.currentY) / 2;
+
+        context.quadraticCurveTo(cx, cy, midX, midY);
+      }
+
+      // Final segment to last point
+      const lastPoint = rowPoints[rowPoints.length - 1];
+      context.lineTo(lastPoint.currentX, lastPoint.currentY);
+
       context.stroke();
     }
   }
