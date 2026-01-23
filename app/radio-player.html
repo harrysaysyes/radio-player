@@ -79,7 +79,15 @@
         </div>
     </div>
 
-    <script src="wave-animation.js"></script>
+    <script src="simplex-noise.js"></script>
+    <script src="wave-grid.js"></script>
     <script src="app.js"></script>
+    <script>
+        // Initialize wave grid animation
+        const canvas = document.getElementById('backgroundCanvas');
+        if (canvas && window.waveGrid) {
+            waveGrid.init(canvas);
+        }
+    </script>
 </body>
 </html>

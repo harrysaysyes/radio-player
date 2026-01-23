@@ -51,16 +51,8 @@ stationCards.forEach(card => {
         document.body.className = `theme-${stationId}`;
 
         // Update canvas animation theme
-        if (typeof waveGridInstance !== 'undefined' && waveGridInstance) {
-            const configKey = `theme-${stationId}`;
-            const newConfig = window.CANVAS_CONFIGS[configKey];
-
-            if (newConfig) {
-                console.log(`Updating canvas config: ${configKey}, lineColor: ${newConfig.lineColor}`);
-                waveGridInstance.updateConfig(newConfig);
-            } else {
-                console.error(`Canvas config not found for: ${configKey}. Available:`, Object.keys(window.CANVAS_CONFIGS));
-            }
+        if (window.waveGrid) {
+            window.waveGrid.setTheme(stationId);
         }
 
         // Update active state
@@ -103,16 +95,8 @@ playCustomBtn.addEventListener('click', () => {
     document.body.className = 'no-selection';
 
     // Update canvas animation to default theme
-    if (typeof waveGridInstance !== 'undefined' && waveGridInstance) {
-        const configKey = 'no-selection';
-        const newConfig = window.CANVAS_CONFIGS[configKey];
-
-        if (newConfig) {
-            console.log(`Updating canvas config: ${configKey}, lineColor: ${newConfig.lineColor}`);
-            waveGridInstance.updateConfig(newConfig);
-        } else {
-            console.error(`Canvas config not found for: ${configKey}`);
-        }
+    if (window.waveGrid) {
+        window.waveGrid.setTheme('default');
     }
 
     stationCards.forEach(c => c.classList.remove('active'));
@@ -594,31 +578,6 @@ if ('serviceWorker' in navigator) {
 }
 
 // ============================================================================
-// Canvas Animation Initialization
+// Canvas Animation - Already initialized in HTML
 // ============================================================================
-
-// Initialize background canvas animation
-const bgCanvas = document.getElementById('backgroundCanvas');
-
-if (bgCanvas && typeof WaveGrid !== 'undefined') {
-    const initialConfig = window.CANVAS_CONFIGS['no-selection'];
-    window.waveGridInstance = new WaveGrid(bgCanvas, initialConfig);
-    window.waveGridInstance.start();
-
-    // Force initial render after DOM is fully painted
-    window.requestAnimationFrame(() => {
-        if (window.waveGridInstance) {
-            window.waveGridInstance.resize();
-            window.waveGridInstance.createGrid();
-        }
-    });
-}
-
-// Page Visibility API - pause animation when tab is hidden
-document.addEventListener('visibilitychange', () => {
-    if (document.hidden && window.waveGridInstance) {
-        window.waveGridInstance.stop();
-    } else if (window.waveGridInstance) {
-        window.waveGridInstance.start();
-    }
-});
+// The wave grid animation is initialized in radio-player.html
