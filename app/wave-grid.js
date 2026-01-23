@@ -10,27 +10,27 @@
   const config = {
     // Grid
     xGap: 40,              // Horizontal spacing (px)
-    yGap: 40,              // Vertical spacing (px)
+    yGap: 25,              // Vertical spacing (px) - reduced for more lines
 
     // Base Noise
     noiseScale: 0.003,     // Spatial frequency of base noise
     noiseSpeed: 0.0002,    // Temporal frequency (animation speed)
-    amplitude: 20,         // Max vertical displacement (px)
+    amplitude: 12,         // Max vertical displacement (px) - reduced for calmer base
 
     // Vertical Domain Warp (Line Convergence)
     warpScale: 0.001,      // Spatial frequency of domain warp
     warpSpeed: 0.0001,     // Temporal frequency of warp
-    warpAmp: 60,           // Strength of domain warp (px)
+    warpAmp: 40,           // Strength of domain warp (px) - reduced for less chaos
 
     // Ridge Noise (Pinch Zones)
     ridgeScale: 0.002,     // Spatial frequency of ridge noise
     ridgeSpeed: 0.00015,   // Temporal frequency of ridge
     ridgePower: 2.0,       // Sharpness exponent (higher = sharper)
-    ridgeStrength: 0.5,    // Multiplier for ridge contribution
+    ridgeStrength: 0.3,    // Multiplier for ridge contribution - reduced
 
     // Secondary Vector Warp
     vecWarpScale: 0.0015,  // Spatial frequency of vector warp
-    vecWarpAmp: 15,        // Strength of vector warp (px)
+    vecWarpAmp: 10,        // Strength of vector warp (px) - reduced
 
     // Physics
     springStrength: 0.03,  // Spring restoration force
@@ -38,13 +38,13 @@
 
     // Cursor Interaction
     influenceRadius: 150,  // Cursor effect radius (px)
-    cursorStrength: 0.5,   // Force multiplier
-    velocityMult: 0.3,     // Cursor velocity scaling
+    cursorStrength: 1.0,   // Force multiplier - increased for stronger interaction
+    velocityMult: 0.5,     // Cursor velocity scaling - increased
 
     // Audio Reactivity
     audioReactivityEnabled: true,
-    audioSpeedMultiplier: 2.0,      // Max speed increase (1x to 3x)
-    audioAmplitudeMultiplier: 2.0,  // Max amplitude increase (1x to 3x)
+    audioSpeedMultiplier: 1.5,      // Max speed increase - reduced for calmer feel
+    audioAmplitudeMultiplier: 4.0,  // Max amplitude increase - INCREASED for dramatic response
     audioSmoothingFactor: 0.15      // EMA smoothing (lower = smoother)
   };
 

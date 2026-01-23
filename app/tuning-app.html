@@ -127,6 +127,19 @@
             border-top: 1px solid #333;
         }
 
+        .preset-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+        }
+
+        .preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
         button {
             width: 100%;
             padding: 12px;
@@ -146,6 +159,25 @@
 
         button:active {
             transform: scale(0.98);
+        }
+
+        .preset-btn {
+            background: #2a2a2a;
+            font-size: 12px;
+            padding: 10px;
+        }
+
+        .preset-btn:hover {
+            background: #3a3a3a;
+        }
+
+        .reset-btn {
+            background: #444;
+            margin-top: 8px;
+        }
+
+        .reset-btn:hover {
+            background: #555;
         }
 
         textarea {
@@ -175,6 +207,17 @@
                 Adjust parameters in real-time to tune the wave field appearance.
             </p>
 
+            <div class="preset-section">
+                <h2 style="margin-top: 0;">Quick Presets</h2>
+                <div class="preset-grid">
+                    <button class="preset-btn" data-preset="calm">🌊 Calm</button>
+                    <button class="preset-btn" data-preset="dramatic">⚡ Dramatic</button>
+                    <button class="preset-btn" data-preset="fast">🏃 Fast</button>
+                    <button class="preset-btn" data-preset="slow">🐢 Slow</button>
+                </div>
+                <button class="reset-btn" id="resetBtn">↺ Reset to Defaults</button>
+            </div>
+
             <h2>Grid</h2>
             <div class="param-group">
                 <div class="param">
@@ -188,9 +231,9 @@
                 <div class="param">
                     <div class="param-label">
                         <span class="param-name">Y Gap</span>
-                        <span class="param-value" id="yGap-value">40</span>
+                        <span class="param-value" id="yGap-value">25</span>
                     </div>
-                    <input type="range" id="yGap" min="20" max="80" step="5" value="40">
+                    <input type="range" id="yGap" min="15" max="60" step="5" value="25">
                     <div class="info">Vertical spacing between lines (px)</div>
                 </div>
             </div>
@@ -216,9 +259,9 @@
                 <div class="param">
                     <div class="param-label">
                         <span class="param-name">Amplitude</span>
-                        <span class="param-value" id="amplitude-value">20</span>
+                        <span class="param-value" id="amplitude-value">12</span>
                     </div>
-                    <input type="range" id="amplitude" min="5" max="50" step="1" value="20">
+                    <input type="range" id="amplitude" min="5" max="50" step="1" value="12">
                     <div class="info">Maximum vertical displacement (px)</div>
                 </div>
             </div>
@@ -244,9 +287,9 @@
                 <div class="param">
                     <div class="param-label">
                         <span class="param-name">Warp Amplitude</span>
-                        <span class="param-value" id="warpAmp-value">60</span>
+                        <span class="param-value" id="warpAmp-value">40</span>
                     </div>
-                    <input type="range" id="warpAmp" min="0" max="150" step="5" value="60">
+                    <input type="range" id="warpAmp" min="0" max="150" step="5" value="40">
                     <div class="info">Strength of domain warp (px)</div>
                 </div>
             </div>
@@ -280,9 +323,9 @@
                 <div class="param">
                     <div class="param-label">
                         <span class="param-name">Ridge Strength</span>
-                        <span class="param-value" id="ridgeStrength-value">0.5</span>
+                        <span class="param-value" id="ridgeStrength-value">0.3</span>
                     </div>
-                    <input type="range" id="ridgeStrength" min="0" max="2" step="0.1" value="0.5">
+                    <input type="range" id="ridgeStrength" min="0" max="2" step="0.1" value="0.3">
                     <div class="info">Multiplier for ridge contribution</div>
                 </div>
             </div>
@@ -300,9 +343,9 @@
                 <div class="param">
                     <div class="param-label">
                         <span class="param-name">Vector Warp Amplitude</span>
-                        <span class="param-value" id="vecWarpAmp-value">15</span>
+                        <span class="param-value" id="vecWarpAmp-value">10</span>
                     </div>
-                    <input type="range" id="vecWarpAmp" min="0" max="50" step="1" value="15">
+                    <input type="range" id="vecWarpAmp" min="0" max="50" step="1" value="10">
                     <div class="info">Strength of vector warp (px)</div>
                 </div>
             </div>
@@ -340,17 +383,17 @@
                 <div class="param">
                     <div class="param-label">
                         <span class="param-name">Cursor Strength</span>
-                        <span class="param-value" id="cursorStrength-value">0.5</span>
+                        <span class="param-value" id="cursorStrength-value">1.0</span>
                     </div>
-                    <input type="range" id="cursorStrength" min="0" max="2" step="0.1" value="0.5">
+                    <input type="range" id="cursorStrength" min="0" max="2" step="0.1" value="1.0">
                     <div class="info">Force multiplier</div>
                 </div>
                 <div class="param">
                     <div class="param-label">
                         <span class="param-name">Velocity Multiplier</span>
-                        <span class="param-value" id="velocityMult-value">0.3</span>
+                        <span class="param-value" id="velocityMult-value">0.5</span>
                     </div>
-                    <input type="range" id="velocityMult" min="0" max="1" step="0.05" value="0.3">
+                    <input type="range" id="velocityMult" min="0" max="1" step="0.05" value="0.5">
                     <div class="info">Cursor velocity scaling</div>
                 </div>
             </div>
@@ -486,27 +529,29 @@
         })();
 
         // ===== WAVE GRID ENGINE =====
-        const config = {
+        const defaultConfig = {
             xGap: 40,
-            yGap: 40,
+            yGap: 25,
             noiseScale: 0.003,
             noiseSpeed: 0.0002,
-            amplitude: 20,
+            amplitude: 12,
             warpScale: 0.001,
             warpSpeed: 0.0001,
-            warpAmp: 60,
+            warpAmp: 40,
             ridgeScale: 0.002,
             ridgeSpeed: 0.00015,
             ridgePower: 2.0,
-            ridgeStrength: 0.5,
+            ridgeStrength: 0.3,
             vecWarpScale: 0.0015,
-            vecWarpAmp: 15,
+            vecWarpAmp: 10,
             springStrength: 0.03,
             friction: 0.85,
             influenceRadius: 150,
-            cursorStrength: 0.5,
-            velocityMult: 0.3
+            cursorStrength: 1.0,
+            velocityMult: 0.5
         };
+
+        const config = { ...defaultConfig };
 
         let canvas, ctx;
         let time = 0;
@@ -812,6 +857,68 @@ const config = ${JSON.stringify(exportData, null, 2)};
 // - Vector warp adds swirling, organic motion`;
 
                 output.value = instructions;
+            });
+
+            // Preset buttons
+            const presets = {
+                calm: {
+                    amplitude: 8,
+                    warpAmp: 25,
+                    ridgeStrength: 0.2,
+                    vecWarpAmp: 6,
+                    noiseSpeed: 0.00015
+                },
+                dramatic: {
+                    amplitude: 25,
+                    warpAmp: 80,
+                    ridgeStrength: 0.8,
+                    vecWarpAmp: 20,
+                    noiseSpeed: 0.0003
+                },
+                fast: {
+                    noiseSpeed: 0.0005,
+                    warpSpeed: 0.0003,
+                    ridgeSpeed: 0.0004
+                },
+                slow: {
+                    noiseSpeed: 0.0001,
+                    warpSpeed: 0.00005,
+                    ridgeSpeed: 0.00008
+                }
+            };
+
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const presetName = btn.dataset.preset;
+                    const preset = presets[presetName];
+
+                    Object.keys(preset).forEach(param => {
+                        config[param] = preset[param];
+                        const slider = document.getElementById(param);
+                        const valueDisplay = document.getElementById(`${param}-value`);
+                        if (slider && valueDisplay) {
+                            slider.value = preset[param];
+                            valueDisplay.textContent = preset[param];
+                        }
+                    });
+
+                    needsRebuild = true;
+                });
+            });
+
+            // Reset button
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                Object.keys(defaultConfig).forEach(param => {
+                    config[param] = defaultConfig[param];
+                    const slider = document.getElementById(param);
+                    const valueDisplay = document.getElementById(`${param}-value`);
+                    if (slider && valueDisplay) {
+                        slider.value = defaultConfig[param];
+                        valueDisplay.textContent = defaultConfig[param];
+                    }
+                });
+
+                needsRebuild = true;
             });
         }
 
