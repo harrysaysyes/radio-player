@@ -1,9 +1,10 @@
-const CACHE_NAME = 'radio-player-v3.4';
+const CACHE_NAME = 'radio-player-v3.5';
 const urlsToCache = [
   './',
   './radio-player.html',
   './styles.css',
-  './wave-animation.js',
+  './simplex-noise.js',
+  './wave-grid.js',
   './app.js',
   './manifest.json',
   './assets/logos/classicfm.svg',
