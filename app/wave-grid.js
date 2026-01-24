@@ -9,43 +9,34 @@
   // ===== CONFIGURATION =====
   const config = {
     // Grid
-    xGap: 40,              // Horizontal spacing (px)
-    yGap: 25,              // Vertical spacing (px) - reduced for more lines
+    xGap: 12,              // Horizontal spacing (px) - reduced for smoother polylines
+    yGap: 25,              // Vertical spacing (px)
 
-    // Base Noise
-    noiseScale: 0.003,     // Spatial frequency of base noise
-    noiseSpeed: 0.0002,    // Temporal frequency (animation speed)
-    amplitude: 12,         // Max vertical displacement (px) - reduced for calmer base
+    // Noise Angle Field
+    xScale: 0.003,         // Spatial frequency in X
+    yScale: 0.003,         // Spatial frequency in Y
+    speedX: 0.15,          // Time scroll speed in X
+    speedY: 0.08,          // Time scroll speed in Y
+    angleGain: Math.PI,    // Angle multiplier for noise
 
-    // Vertical Domain Warp (Line Convergence)
-    warpScale: 0.001,      // Spatial frequency of domain warp
-    warpSpeed: 0.0001,     // Temporal frequency of warp
-    warpAmp: 40,           // Strength of domain warp (px) - reduced for less chaos
-
-    // Ridge Noise (Pinch Zones)
-    ridgeScale: 0.002,     // Spatial frequency of ridge noise
-    ridgeSpeed: 0.00015,   // Temporal frequency of ridge
-    ridgePower: 2.0,       // Sharpness exponent (higher = sharper)
-    ridgeStrength: 0.3,    // Multiplier for ridge contribution - reduced
-
-    // Secondary Vector Warp
-    vecWarpScale: 0.0015,  // Spatial frequency of vector warp
-    vecWarpAmp: 10,        // Strength of vector warp (px) - reduced
-
-    // Physics
-    springStrength: 0.03,  // Spring restoration force
-    friction: 0.85,        // Velocity damping (0-1)
+    // Wave Displacement
+    waveAmpX: 0,           // Horizontal wave amplitude (0 = horizontal lines only)
+    waveAmpY: 10,          // Vertical wave amplitude (max: 0.45 * yGap = 11.25)
 
     // Cursor Interaction
     influenceRadius: 150,  // Cursor effect radius (px)
-    cursorStrength: 1.0,   // Force multiplier - increased for stronger interaction
-    velocityMult: 0.5,     // Cursor velocity scaling - increased
+    cursorStrength: 0.4,   // Impulse strength
+    wobbleFreq: 0.015,     // Wobble frequency
+    cursorXScale: 0.3,     // Horizontal cursor displacement scale
+    maxCursorMoveY: 20,    // Max cursor Y offset (0.8 * yGap = 20)
+
+    // Physics
+    tension: 0.03,         // Spring restoration force
+    friction: 0.87,        // Velocity damping (0-1)
 
     // Audio Reactivity
     audioReactivityEnabled: true,
-    audioSpeedMultiplier: 1.5,      // Max speed increase - reduced for calmer feel
-    audioAmplitudeMultiplier: 4.0,  // Max amplitude increase - INCREASED for dramatic response
-    audioSmoothingFactor: 0.15      // EMA smoothing (lower = smoother)
+    audioAmplitudeMultiplier: 3.0  // Multiplier for wave amplitude during audio peaks
   };
 
   // ===== STATE =====
@@ -67,10 +58,7 @@
     y: 0,
     velocityX: 0,
     velocityY: 0,
-    isActive: false,
-    influenceRadius: config.influenceRadius,
-    strength: config.cursorStrength,
-    velocityMult: config.velocityMult
+    isActive: false
   };
 
   // Theme system
@@ -90,13 +78,12 @@
     }
   };
 
-  // Audio reactivity
-  let smoothedAudioEnergy = 0;
-
   // ===== GRID INITIALIZATION =====
-  function initGrid(canvasElement) {
-    const cols = Math.ceil(canvasElement.width / config.xGap) + 1;
-    const rows = Math.ceil(canvasElement.height / config.yGap) + 1;
+  function initGrid(canvasElement, logicalWidth, logicalHeight) {
+    const width = logicalWidth || canvasElement.width;
+    const height = logicalHeight || canvasElement.height;
+    const cols = Math.ceil(width / config.xGap) + 1;
+    const rows = Math.ceil(height / config.yGap) + 1;
 
     grid.cols = cols;
     grid.rows = rows;
@@ -110,156 +97,90 @@
           baseY: row * config.yGap,
           currentX: col * config.xGap,
           currentY: row * config.yGap,
-          velocityX: 0,
-          velocityY: 0
+          cx: 0,         // Cursor offset X
+          cy: 0,         // Cursor offset Y
+          cvx: 0,        // Cursor velocity X
+          cvy: 0         // Cursor velocity Y
         });
       }
     }
   }
 
-  // ===== AUDIO REACTIVITY =====
-  function smoothAudioEnergy(rawEnergy) {
-    // Exponential moving average (EMA) for smooth audio response
-    const alpha = config.audioSmoothingFactor;
-    smoothedAudioEnergy = (alpha * rawEnergy) + ((1 - alpha) * smoothedAudioEnergy);
-    return smoothedAudioEnergy;
-  }
-
   // ===== ANIMATION LOOP =====
   function update(deltaTime) {
-    // Get current audio energy (0-1) and smooth it
+    // Increment time
+    time += deltaTime * 0.001;
+
+    // Get audio energy for amplitude modulation
     let audioEnergy = 0;
     if (config.audioReactivityEnabled && typeof window.getAudioEnergy === 'function') {
       audioEnergy = window.getAudioEnergy();
-      audioEnergy = smoothAudioEnergy(audioEnergy);
     }
 
-    // Modulate animation speed based on audio energy
-    const speedMultiplier = 1.0 + (audioEnergy * config.audioSpeedMultiplier);
-    time += deltaTime * config.noiseSpeed * speedMultiplier;
+    // Modulate wave amplitude based on audio
+    const currentWaveAmpY = config.waveAmpY * (1.0 + audioEnergy * config.audioAmplitudeMultiplier);
 
-    // Modulate wave amplitude based on audio energy
-    const amplitudeMultiplier = 1.0 + (audioEnergy * config.audioAmplitudeMultiplier);
-    const currentAmplitude = config.amplitude * amplitudeMultiplier;
-
-    // Update each point with contour wave field
+    // Update each point with simple angle-based noise field
     for (let i = 0; i < grid.points.length; i++) {
       const point = grid.points[i];
       const x = point.baseX;
       const y = point.baseY;
 
-      // ===== LAYER 1: Secondary Vector Warp =====
-      // Adds swirling, organic motion to the entire field
-      // Two offset noise fields create a 2D vector field
-      const vWarpX = simplex.noise3D(
-        x * config.vecWarpScale,
-        y * config.vecWarpScale,
-        time + 100  // Offset in time for independent motion
+      // ===== NOISE ANGLE FIELD =====
+      // Sample 2D noise to get angle for wave displacement
+      const t = config.angleGain * simplex.noise2D(
+        x * config.xScale + time * config.speedX,
+        y * config.yScale + time * config.speedY
       );
-      const vWarpY = simplex.noise3D(
-        x * config.vecWarpScale,
-        y * config.vecWarpScale,
-        time + 200  // Different offset for Y component
-      );
-      // Apply vector warp to base coordinates
-      const wx = x + (vWarpX * config.vecWarpAmp);
-      const wy = y + (vWarpY * config.vecWarpAmp);
 
-      // ===== LAYER 2: Vertical Domain Warp (Line Convergence) =====
-      // Warps the Y coordinate before noise sampling
-      // Creates regions where contour lines pinch together or spread apart
-      const domainWarp = simplex.noise3D(
-        wx * config.warpScale,
-        wy * config.warpScale,
-        time * config.warpSpeed
-      );
-      // Apply warp to Y domain only (creates vertical compression/expansion)
-      const warpedY = wy + (domainWarp * config.warpAmp);
-
-      // ===== LAYER 3: Base Noise Displacement =====
-      // Primary vertical displacement using warped coordinates
-      // Angle-based conversion ensures smooth, continuous motion
-      const baseNoise = simplex.noise3D(
-        wx * config.noiseScale,
-        warpedY * config.noiseScale,  // Use warped Y for convergence effect
-        time
-      );
-      const angle = baseNoise * Math.PI;
-      // Vertical displacement only - X stays fixed for horizontal contours
-      const baseDisp = Math.sin(angle) * currentAmplitude;
-
-      // ===== LAYER 4: Ridge Noise (Pinch Zones) =====
-      // Absolute value creates sharp ridges (topographic peaks)
-      // Higher power creates sharper, more pronounced ridges
-      const ridgeNoise = Math.abs(simplex.noise3D(
-        wx * config.ridgeScale,
-        wy * config.ridgeScale,
-        time * config.ridgeSpeed
-      ));
-      // Raise to power for sharpness control
-      const ridgeValue = Math.pow(ridgeNoise, config.ridgePower);
-      // Ridge modulates the base displacement
-      const ridgeDisp = baseDisp * ridgeValue * config.ridgeStrength;
-
-      // ===== COMBINED DISPLACEMENT =====
-      // Final noise-based vertical displacement
-      const totalNoiseDisp = baseDisp + ridgeDisp;
+      // Wave displacement from angle
+      const waveX = Math.cos(t) * config.waveAmpX;
+      const waveY = Math.sin(t) * currentWaveAmpY;
 
       // ===== CURSOR VELOCITY INJECTION =====
-      // Inject cursor velocity into point velocity (elastic interaction)
-      // NOT direct force - velocity creates momentum and oscillation
       if (pointer.isActive) {
-        const dx = point.currentX - pointer.x;
-        const dy = point.currentY - pointer.y;
+        const dx = x - pointer.x;
+        const dy = y - pointer.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
-        if (distance < pointer.influenceRadius && distance > 0) {
-          // Quadratic falloff for smooth, natural influence
-          const normalizedDist = distance / pointer.influenceRadius;
+        if (distance < config.influenceRadius && distance > 0) {
+          // Quadratic falloff
+          const normalizedDist = distance / config.influenceRadius;
           const falloff = 1 - (normalizedDist * normalizedDist);
 
-          // Direction away from cursor (repulsion)
-          const dirX = dx / distance;
-          const dirY = dy / distance;
+          // Wobble term
+          const wobble = 0.6 + 0.4 * Math.cos(distance * config.wobbleFreq);
 
-          // Inject velocity based on cursor motion and distance
-          // Fast cursor creates large velocity injection
-          const velocityInjection = falloff * pointer.strength * config.velocityMult;
-          point.velocityX += dirX * velocityInjection * pointer.velocityX;
-          point.velocityY += dirY * velocityInjection * pointer.velocityY;
+          // Impulse strength
+          const impulse = falloff * wobble * config.cursorStrength;
+
+          // Inject velocity
+          point.cvx += pointer.velocityX * impulse;
+          point.cvy += pointer.velocityY * impulse;
         }
       }
 
-      // ===== SPRING PHYSICS =====
-      // Rest position = base position + noise displacement
-      // X rest position is always baseX (no horizontal drift)
-      const restX = point.baseX;
-      const restY = point.baseY + totalNoiseDisp;
+      // ===== SPRING + FRICTION =====
+      // Spring pulls cursor offset back to zero
+      point.cvx += (-point.cx) * config.tension;
+      point.cvy += (-point.cy) * config.tension;
 
-      // Spring force pulls point back to rest position
-      const springX = (restX - point.currentX) * config.springStrength;
-      const springY = (restY - point.currentY) * config.springStrength;
+      // Friction
+      point.cvx *= config.friction;
+      point.cvy *= config.friction;
 
-      // ===== VELOCITY INTEGRATION =====
-      // Add spring force to velocity
-      point.velocityX += springX;
-      point.velocityY += springY;
+      // Integrate
+      point.cx += point.cvx;
+      point.cy += point.cvy;
 
-      // Apply friction damping
-      point.velocityX *= config.friction;
-      point.velocityY *= config.friction;
+      // ===== CLAMP CURSOR OFFSET =====
+      const maxCursorMoveX = config.maxCursorMoveY; // Use same limit for X
+      point.cx = Math.max(-maxCursorMoveX, Math.min(maxCursorMoveX, point.cx));
+      point.cy = Math.max(-config.maxCursorMoveY, Math.min(config.maxCursorMoveY, point.cy));
 
-      // Integrate velocity to position
-      point.currentX += point.velocityX;
-      point.currentY += point.velocityY;
-
-      // ===== DISPLACEMENT CLAMPING =====
-      // Prevent extreme outliers from cursor interaction
-      const maxOffset = currentAmplitude * 3;
-      point.currentY = Math.max(
-        point.baseY - maxOffset,
-        Math.min(point.baseY + maxOffset, point.currentY)
-      );
+      // ===== FINAL POSITION =====
+      point.currentX = point.baseX + waveX + point.cx * config.cursorXScale;
+      point.currentY = point.baseY + waveY + point.cy;
     }
   }
 
@@ -270,47 +191,36 @@
     context.fillStyle = theme.background;
     context.fillRect(0, 0, context.canvas.width, context.canvas.height);
 
-    // Draw grid as smooth curved lines using quadratic curves
+    // Draw horizontal contour lines as polylines
     context.strokeStyle = theme.lineColor;
     context.lineWidth = 1;
+    context.lineJoin = 'round';
+    context.lineCap = 'round';
 
     for (let row = 0; row < grid.rows; row++) {
       context.beginPath();
 
-      // Collect all points for this row
-      const rowPoints = [];
-      for (let col = 0; col < grid.cols; col++) {
-        rowPoints.push(grid.points[row * grid.cols + col]);
+      // First point
+      const firstIdx = row * grid.cols;
+      const firstPoint = grid.points[firstIdx];
+      context.moveTo(firstPoint.currentX, firstPoint.currentY);
+
+      // Draw line segments through all points in row
+      for (let col = 1; col < grid.cols; col++) {
+        const point = grid.points[row * grid.cols + col];
+        context.lineTo(point.currentX, point.currentY);
       }
-
-      if (rowPoints.length < 2) continue;
-
-      // Start at first point
-      context.moveTo(rowPoints[0].currentX, rowPoints[0].currentY);
-
-      // Use quadratic curves for smooth interpolation between points
-      for (let i = 0; i < rowPoints.length - 1; i++) {
-        const p0 = rowPoints[i];
-        const p1 = rowPoints[i + 1];
-
-        // Control point is the current point, curve to midpoint
-        const cx = p0.currentX;
-        const cy = p0.currentY;
-        const midX = (p0.currentX + p1.currentX) / 2;
-        const midY = (p0.currentY + p1.currentY) / 2;
-
-        context.quadraticCurveTo(cx, cy, midX, midY);
-      }
-
-      // Final segment to last point
-      const lastPoint = rowPoints[rowPoints.length - 1];
-      context.lineTo(lastPoint.currentX, lastPoint.currentY);
 
       context.stroke();
     }
   }
 
   function animate(currentTime) {
+    // Initialize lastTime on first frame to avoid huge deltaTime
+    if (lastTime === 0) {
+      lastTime = currentTime;
+    }
+
     const deltaTime = currentTime - lastTime;
     lastTime = currentTime;
 
@@ -345,12 +255,21 @@
 
   // ===== RESIZE HANDLING =====
   function resize(canvasElement, context) {
-    // Set canvas size to window size
-    canvasElement.width = window.innerWidth;
-    canvasElement.height = window.innerHeight;
+    const dpr = window.devicePixelRatio || 1;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
 
-    // Reinitialize grid
-    initGrid(canvasElement);
+    // Set canvas size scaled by DPR for crisp rendering
+    canvasElement.width = width * dpr;
+    canvasElement.height = height * dpr;
+    canvasElement.style.width = width + 'px';
+    canvasElement.style.height = height + 'px';
+
+    // Scale context to match DPR
+    context.scale(dpr, dpr);
+
+    // Reinitialize grid with logical dimensions
+    initGrid(canvasElement, width, height);
   }
 
   // Debounced resize handler
