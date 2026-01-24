@@ -608,13 +608,23 @@ window.getAudioEnergy = function() {
 
     analyserNode.getByteFrequencyData(frequencyData);
 
-    // Average bass frequencies (bins 0-10 ≈ 0-200Hz)
+    // Bass frequencies (bins 0-10 ≈ 0-200Hz) - for low-end energy
     let bassSum = 0;
     for (let i = 0; i < 10; i++) {
         bassSum += frequencyData[i];
     }
 
-    return (bassSum / 10) / 255; // Normalize to 0-1
+    // Mid frequencies (bins 10-40 ≈ 200-800Hz) - for beat/tempo detection
+    let midSum = 0;
+    for (let i = 10; i < 40; i++) {
+        midSum += frequencyData[i];
+    }
+
+    // Weighted blend: 70% bass, 30% mids (emphasize low-end but detect beats)
+    const bassEnergy = (bassSum / 10) / 255;
+    const midEnergy = (midSum / 30) / 255;
+
+    return bassEnergy * 0.7 + midEnergy * 0.3; // Normalize to 0-1
 };
 
 // ============================================================================

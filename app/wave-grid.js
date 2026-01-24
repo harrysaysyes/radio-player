@@ -10,7 +10,7 @@
   const config = {
     // Grid
     xGap: 12,              // Horizontal spacing (px) - reduced for smoother polylines
-    yGap: 25,              // Vertical spacing (px)
+    yGap: 18,              // Vertical spacing (px) - creates ~60 lines vs ~44
 
     // Noise Angle Field
     xScale: 0.003,         // Spatial frequency in X
@@ -36,7 +36,7 @@
 
     // Audio Reactivity
     audioReactivityEnabled: true,
-    audioAmplitudeMultiplier: 3.0  // Multiplier for wave amplitude during audio peaks
+    audioAmplitudeMultiplier: 4.0  // Multiplier for wave amplitude during audio peaks (increased for power curve)
   };
 
   // ===== STATE =====
@@ -117,8 +117,9 @@
       audioEnergy = window.getAudioEnergy();
     }
 
-    // Modulate wave amplitude based on audio
-    const currentWaveAmpY = config.waveAmpY * (1.0 + audioEnergy * config.audioAmplitudeMultiplier);
+    // Modulate wave amplitude based on audio with exponential curve for wider dynamic range
+    const audioResponse = Math.pow(audioEnergy, 1.5); // Power curve: calm songs subtle, energetic songs dramatic
+    const currentWaveAmpY = config.waveAmpY * (1.0 + audioResponse * config.audioAmplitudeMultiplier);
 
     // Update each point with simple angle-based noise field
     for (let i = 0; i < grid.points.length; i++) {
