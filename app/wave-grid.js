@@ -13,15 +13,15 @@
     yGap: 18,              // Vertical spacing (px) - creates ~60 lines vs ~44
 
     // Noise Angle Field
-    xScale: 0.003,         // Spatial frequency in X
-    yScale: 0.003,         // Spatial frequency in Y
-    speedX: 0.15,          // Time scroll speed in X
-    speedY: 0.08,          // Time scroll speed in Y
-    angleGain: Math.PI,    // Angle multiplier for noise
+    xScale: 0.002,         // Spatial frequency in X (reduced for smoother waves)
+    yScale: 0.0015,        // Spatial frequency in Y (reduced for smoother waves)
+    speedX: 0.03,          // Time scroll speed in X (slower for fluid motion)
+    speedY: 0.015,         // Time scroll speed in Y (slower for fluid motion)
+    angleGain: 6,          // Angle multiplier for noise (reduced for smoother undulation)
 
     // Wave Displacement
     waveAmpX: 0,           // Horizontal wave amplitude (0 = horizontal lines only)
-    waveAmpY: 10,          // Vertical wave amplitude (max: 0.45 * yGap = 11.25)
+    waveAmpY: 12,          // Vertical wave amplitude (slightly increased for more visible waves)
 
     // Cursor Interaction
     influenceRadius: 150,  // Cursor effect radius (px)
