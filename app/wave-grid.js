@@ -25,14 +25,14 @@
 
     // Cursor Interaction
     influenceRadius: 150,  // Cursor effect radius (px)
-    cursorStrength: 0.4,   // Impulse strength
+    cursorStrength: 1.2,   // Impulse strength (increased for more visible interaction)
     wobbleFreq: 0.015,     // Wobble frequency
     cursorXScale: 0.3,     // Horizontal cursor displacement scale
     maxCursorMoveY: 20,    // Max cursor Y offset (0.8 * yGap = 20)
 
     // Physics
     tension: 0.03,         // Spring restoration force
-    friction: 0.87,        // Velocity damping (0-1)
+    friction: 0.82,        // Velocity damping (reduced for smoother motion)
 
     // Audio Reactivity
     audioReactivityEnabled: true,

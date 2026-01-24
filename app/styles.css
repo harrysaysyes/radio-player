@@ -653,7 +653,6 @@ body.theme-reprezent .status-bar.playing .status-dot {
     width: 100vw;
     height: 100vh;
     z-index: 0;
-    pointer-events: none;
     opacity: 0.8;
     transition: opacity 0.6s ease;
 }
