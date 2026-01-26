@@ -385,98 +385,6 @@ body.theme-reprezent .custom-btn.active {
     background: rgba(255, 255, 255, 0.15);
 }
 
-.volume-control {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 18px 22px;
-    background: rgba(139, 76, 246, 0.08);
-    border: 1px solid rgba(139, 76, 246, 0.2);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    margin-bottom: 24px;
-}
-
-body.theme-classicfm .volume-control {
-    background: rgba(220, 20, 60, 0.08);
-    border-color: rgba(255, 215, 0, 0.3);
-}
-
-body.theme-reprezent .volume-control {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.2);
-}
-
-.volume-icon {
-    font-size: 20px;
-}
-
-.volume-slider {
-    flex: 1;
-    height: 6px;
-    -webkit-appearance: none;
-    appearance: none;
-    background: rgba(139, 76, 246, 0.15);
-    border-radius: 3px;
-    outline: none;
-}
-
-body.theme-classicfm .volume-slider {
-    background: rgba(220, 20, 60, 0.2);
-}
-
-body.theme-reprezent .volume-slider {
-    background: rgba(255, 255, 255, 0.15);
-}
-
-.volume-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 18px;
-    height: 18px;
-    background: #667eea;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-body.theme-classicfm .volume-slider::-webkit-slider-thumb {
-    background: #DC143C;
-}
-
-body.theme-reprezent .volume-slider::-webkit-slider-thumb {
-    background: #ffffff;
-}
-
-.volume-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.2);
-}
-
-.volume-slider::-moz-range-thumb {
-    width: 18px;
-    height: 18px;
-    background: #667eea;
-    border-radius: 50%;
-    cursor: pointer;
-    border: none;
-}
-
-body.theme-classicfm .volume-slider::-moz-range-thumb {
-    background: #DC143C;
-}
-
-body.theme-reprezent .volume-slider::-moz-range-thumb {
-    background: #ffffff;
-}
-
-.volume-value {
-    min-width: 45px;
-    text-align: right;
-    font-weight: 700;
-    font-size: 13px;
-    color: var(--text-primary);
-}
-
 .custom-stream {
     max-height: 0;
     overflow: hidden;
@@ -711,20 +619,6 @@ body.theme-reprezent .status-bar.playing .status-dot {
         font-size: 11px;
     }
 
-    .volume-control {
-        padding: 12px 14px;
-        margin-top: 16px;
-    }
-
-    .volume-icon {
-        font-size: 16px;
-    }
-
-    .volume-value {
-        font-size: 11px;
-        min-width: 35px;
-    }
-
     .status-bar {
         padding: 10px 14px;
         font-size: 11px;
@@ -806,20 +700,6 @@ body.theme-reprezent .status-bar.playing .status-dot {
     .custom-btn {
         padding: 16px;
         font-size: 12px;
-    }
-
-    .volume-control {
-        padding: 14px 16px;
-        margin-top: 20px;
-    }
-
-    .volume-icon {
-        font-size: 18px;
-    }
-
-    .volume-value {
-        font-size: 12px;
-        min-width: 40px;
     }
 
     .status-bar {

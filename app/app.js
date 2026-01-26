@@ -22,8 +22,6 @@ const customBtn = document.getElementById('customBtn');
 const customStream = document.getElementById('customStream');
 const customStreamInput = document.getElementById('customStreamInput');
 const playCustomBtn = document.getElementById('playCustomBtn');
-const volumeSlider = document.getElementById('volumeSlider');
-const volumeValue = document.getElementById('volumeValue');
 const statusBar = document.getElementById('statusBar');
 const statusText = document.getElementById('statusText');
 const nowPlaying = document.getElementById('nowPlaying');
@@ -107,15 +105,6 @@ playCustomBtn.addEventListener('click', () => {
     playStream(url, null);
 });
 
-// Volume control
-volumeSlider.addEventListener('input', (e) => {
-    const volume = e.target.value;
-    volumeValue.textContent = volume + '%';
-    if (audio) {
-        audio.volume = volume / 100;
-    }
-});
-
 // ============================================================================
 // Audio Stream Functions
 // ============================================================================
@@ -141,7 +130,6 @@ function playStream(url, urlAlt = null) {
 
     audio = new Audio(url);
     audio.crossOrigin = "anonymous";  // Required for Web Audio API with CORS
-    audio.volume = volumeSlider.value / 100;
 
     // Setup Web Audio API for audio reactivity
     if (!audioContext) {
@@ -243,7 +231,6 @@ function playStream(url, urlAlt = null) {
 
             audio = new Audio(urlAlt);
             audio.crossOrigin = "anonymous";  // Required for Web Audio API with CORS
-            audio.volume = volumeSlider.value / 100;
 
             // Connect fallback audio to analyser
             if (audio && audioContext) {
