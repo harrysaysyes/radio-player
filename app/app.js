@@ -13,6 +13,9 @@ let analyserNode = null;
 let sourceNode = null;
 let frequencyData = null;
 
+// iOS detection for audio reactivity fallback
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
 // DOM elements
 const stationCards = document.querySelectorAll('.station-card');
 const brandBadge = document.getElementById('brandBadge');
@@ -576,6 +579,13 @@ function releaseWakeLock() {
 
 // Make this function available globally for wave-animation.js to call
 window.getAudioEnergy = function() {
+    // Fallback for iOS when Web Audio API fails (CORS issue)
+    if (isIOS && (!analyserNode || !sourceNode) && audio && !audio.paused) {
+        // Subtle static motion: gentle oscillation 0.15-0.25
+        const time = Date.now() / 1000;
+        return 0.20 + 0.05 * Math.sin(time * 0.5);
+    }
+
     if (!analyserNode || !frequencyData) return 0;
 
     analyserNode.getByteFrequencyData(frequencyData);
