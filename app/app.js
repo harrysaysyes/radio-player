@@ -481,21 +481,6 @@ if ('mediaSession' in navigator) {
         navigator.mediaSession.playbackState = 'none';
     });
 
-    // Seek backward (optional - for CarPlay)
-    navigator.mediaSession.setActionHandler('seekbackward', (details) => {
-        // Radio streams can't seek, so we'll just restart
-        if (audio && !audio.paused) {
-            const currentTime = audio.currentTime;
-            audio.currentTime = Math.max(0, currentTime - (details.seekOffset || 10));
-        }
-    });
-
-    // Seek forward (optional - for CarPlay)
-    navigator.mediaSession.setActionHandler('seekforward', (details) => {
-        // Radio streams can't seek, so we'll ignore this
-        console.log('Seek forward not supported for live radio');
-    });
-
     // Previous track (cycle to other station)
     navigator.mediaSession.setActionHandler('previoustrack', () => {
         // Switch stations
