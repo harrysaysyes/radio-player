@@ -1,7 +1,7 @@
 {
-  "name": "Radio Player",
-  "short_name": "Radio",
-  "description": "Stream Classic FM and Reprezent Radio",
+  "name": "Minify Radio",
+  "short_name": "Minify",
+  "description": "Three stations. No decisions.",
   "start_url": "./radio-player.html",
   "display": "standalone",
   "background_color": "#2c3e50",

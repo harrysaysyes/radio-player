@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Radio Player</title>
+    <title>Minify Radio</title>
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="./manifest.json">
@@ -11,7 +11,7 @@
     <!-- iOS Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Radio">
+    <meta name="apple-mobile-web-app-title" content="Minify Radio">
     <link rel="apple-touch-icon" href="./assets/icons/icon-192.png">
 
     <!-- Theme Colors -->
@@ -28,7 +28,7 @@
     <div class="player-container">
         <div class="header">
             <div class="logo-container" id="logoContainer">
-                <div style="color: var(--text-primary); font-size: 40px; font-weight: 900;">My Vibe Radio</div>
+                <div style="color: var(--text-primary); font-size: 40px; font-weight: 900;">Minify Radio</div>
             </div>
             <div class="tagline" id="tagline">Select a station to begin</div>
         </div>
@@ -49,21 +49,13 @@
                 <div class="station-title">Reprezent</div>
                 <div class="station-subtitle">107.3 FM</div>
             </button>
+
+            <button class="station-card" data-station="station3" data-url="https://placeholder.com/stream" data-name="Station 3" data-tagline="Configure your third station">
+                <div class="station-title">Station 3</div>
+                <div class="station-subtitle">TBD</div>
+            </button>
         </div>
 
-        <div class="controls">
-            <button class="custom-btn" id="customBtn">+ CUSTOM</button>
-        </div>
-
-        <div class="custom-stream" id="customStream">
-            <input
-                type="text"
-                class="custom-stream-input"
-                id="customStreamInput"
-                placeholder="Enter stream URL (MP3/AAC)"
-            >
-            <button class="custom-stream-btn" id="playCustomBtn">▶ PLAY CUSTOM STREAM</button>
-        </div>
 
         <div class="status-bar" id="statusBar">
             <span class="status-dot"></span>

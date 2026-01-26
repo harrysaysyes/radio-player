@@ -19,10 +19,6 @@ const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 // DOM elements
 const stationCards = document.querySelectorAll('.station-card');
 const tagline = document.getElementById('tagline');
-const customBtn = document.getElementById('customBtn');
-const customStream = document.getElementById('customStream');
-const customStreamInput = document.getElementById('customStreamInput');
-const playCustomBtn = document.getElementById('playCustomBtn');
 const statusBar = document.getElementById('statusBar');
 const statusText = document.getElementById('statusText');
 const nowPlaying = document.getElementById('nowPlaying');
@@ -47,7 +43,7 @@ stationCards.forEach(card => {
 
             // Reset branding to default "My Vibe Radio"
             document.body.className = 'no-selection';
-            logoContainer.innerHTML = '<div style="color: var(--text-primary); font-size: 40px; font-weight: 900;">My Vibe Radio</div>';
+            logoContainer.innerHTML = '<div style="color: var(--text-primary); font-size: 40px; font-weight: 900;">Minify Radio</div>';
             tagline.textContent = 'Select a station to begin';
 
             // Update canvas animation to default theme
@@ -91,35 +87,6 @@ stationCards.forEach(card => {
     });
 });
 
-// Custom stream toggle
-customBtn.addEventListener('click', () => {
-    customStream.classList.toggle('visible');
-    customBtn.classList.toggle('active');
-});
-
-// Play custom stream
-playCustomBtn.addEventListener('click', () => {
-    const url = customStreamInput.value.trim();
-    if (!url) {
-        updateStatus('Please enter a stream URL');
-        return;
-    }
-
-    currentStationId = '';
-    currentStationName = 'Custom Stream';
-    document.body.className = 'no-selection';
-
-    // Update canvas animation to default theme
-    if (window.waveGrid) {
-        window.waveGrid.setTheme('default');
-    }
-
-    stationCards.forEach(c => c.classList.remove('active'));
-    logoContainer.innerHTML = '<div style="color: var(--text-primary); font-size: 40px; font-weight: 900;">CUSTOM</div>';
-    tagline.textContent = 'Live Stream';
-
-    playStream(url, null);
-});
 
 // ============================================================================
 // Audio Stream Functions
