@@ -45,9 +45,9 @@ stationCards.forEach(card => {
             stopStream();
             card.classList.remove('active');
 
-            // Reset branding to default "Radio 3"
+            // Reset branding to default "My Vibe Radio"
             document.body.className = 'no-selection';
-            logoContainer.innerHTML = '<div style="color: var(--text-primary); font-size: 40px; font-weight: 900;">Radio 3</div>';
+            logoContainer.innerHTML = '<div style="color: var(--text-primary); font-size: 40px; font-weight: 900;">My Vibe Radio</div>';
             tagline.textContent = 'Select a station to begin';
 
             // Update canvas animation to default theme

@@ -145,19 +145,37 @@
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance < config.influenceRadius && distance > 0) {
-          // Quadratic falloff
-          const normalizedDist = distance / config.influenceRadius;
-          const falloff = 1 - (normalizedDist * normalizedDist);
+          // Normalize direction from cursor to point
+          const dirX = dx / distance;
+          const dirY = dy / distance;
 
-          // Wobble term
-          const wobble = 0.6 + 0.4 * Math.cos(distance * config.wobbleFreq);
+          // Normalize velocity direction
+          const velocityMag = Math.sqrt(pointer.velocityX * pointer.velocityX + pointer.velocityY * pointer.velocityY);
 
-          // Impulse strength
-          const impulse = falloff * wobble * config.cursorStrength;
+          if (velocityMag > 0.1) {  // Only apply if cursor is actually moving
+            const velDirX = pointer.velocityX / velocityMag;
+            const velDirY = pointer.velocityY / velocityMag;
 
-          // Inject velocity
-          point.cvx += pointer.velocityX * impulse;
-          point.cvy += pointer.velocityY * impulse;
+            // Dot product: how much is the point in the direction of movement?
+            const alignment = dirX * velDirX + dirY * velDirY;
+
+            // Only push points ahead of the cursor (positive alignment)
+            if (alignment > 0) {
+              // Distance falloff (smooth)
+              const normalizedDist = distance / config.influenceRadius;
+              const falloff = 1 - (normalizedDist * normalizedDist);
+
+              // Directional strength: stronger for points directly in path
+              const directionalStrength = alignment * alignment;  // Square for sharper focus
+
+              // Combined impulse
+              const impulse = falloff * directionalStrength * config.cursorStrength * velocityMag * 0.3;
+
+              // Push in the direction of movement
+              point.cvx += velDirX * impulse;
+              point.cvy += velDirY * impulse;
+            }
+          }
         }
       }
 
