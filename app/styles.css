@@ -311,9 +311,8 @@ body.theme-reprezent .station-card[data-station="reprezent"].active::before {
     margin-bottom: 20px;
 }
 
-.stop-btn,
 .custom-btn {
-    flex: 1;
+    width: 100%;
     padding: 18px;
     border: 1px solid rgba(139, 76, 246, 0.3);
     background: rgba(139, 76, 246, 0.08);
@@ -329,12 +328,6 @@ body.theme-reprezent .station-card[data-station="reprezent"].active::before {
     color: var(--text-primary);
 }
 
-.stop-btn:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-}
-
-.stop-btn:not(:disabled):hover,
 .custom-btn:hover {
     transform: translateY(-2px);
     border-color: rgba(139, 76, 246, 0.5);
@@ -342,26 +335,22 @@ body.theme-reprezent .station-card[data-station="reprezent"].active::before {
     box-shadow: 0 8px 24px rgba(139, 76, 246, 0.2);
 }
 
-body.theme-classicfm .stop-btn:not(:disabled),
 body.theme-classicfm .custom-btn {
     border-color: rgba(255, 215, 0, 0.3);
     background: rgba(220, 20, 60, 0.08);
 }
 
-body.theme-classicfm .stop-btn:not(:disabled):hover,
 body.theme-classicfm .custom-btn:hover {
     border-color: rgba(255, 215, 0, 0.5);
     background: rgba(220, 20, 60, 0.15);
     box-shadow: 0 8px 24px rgba(220, 20, 60, 0.2);
 }
 
-body.theme-reprezent .stop-btn:not(:disabled),
 body.theme-reprezent .custom-btn {
     border-color: rgba(255, 255, 255, 0.3);
     background: rgba(255, 255, 255, 0.08);
 }
 
-body.theme-reprezent .stop-btn:not(:disabled):hover,
 body.theme-reprezent .custom-btn:hover {
     border-color: rgba(255, 255, 255, 0.5);
     background: rgba(255, 255, 255, 0.15);
@@ -543,9 +532,15 @@ body.theme-reprezent .status-bar.playing .status-dot {
 
 /* Small Mobile: iPhone SE, small phones */
 @media (max-width: 374px) {
+    body {
+        align-items: flex-end;
+        padding-bottom: max(16px, env(safe-area-inset-bottom));
+    }
+
     .player-container {
         padding: 16px;
         border-radius: 20px;
+        margin-bottom: 0;
     }
 
     .header {
@@ -611,7 +606,6 @@ body.theme-reprezent .status-bar.playing .status-dot {
         margin-top: 12px;
     }
 
-    .stop-btn,
     .custom-btn {
         padding: 14px;
         font-size: 11px;
@@ -626,9 +620,15 @@ body.theme-reprezent .status-bar.playing .status-dot {
 
 /* Mobile: Standard phones (iPhone 12, etc) */
 @media (min-width: 375px) and (max-width: 599px) {
+    body {
+        align-items: flex-end;
+        padding-bottom: max(20px, env(safe-area-inset-bottom));
+    }
+
     .player-container {
         padding: 20px;
         border-radius: 24px;
+        margin-bottom: 0;
     }
 
     .header {
@@ -694,7 +694,6 @@ body.theme-reprezent .status-bar.playing .status-dot {
         margin-top: 16px;
     }
 
-    .stop-btn,
     .custom-btn {
         padding: 16px;
         font-size: 12px;
