@@ -24,15 +24,16 @@
     waveAmpY: 12,          // Vertical wave amplitude (slightly increased for more visible waves)
 
     // Cursor Interaction
-    influenceRadius: 150,  // Cursor effect radius (px)
-    cursorStrength: 1.2,   // Impulse strength (increased for more visible interaction)
-    wobbleFreq: 0.015,     // Wobble frequency
+    influenceRadius: 350,  // Cursor effect radius (px) - wider to affect 5+ lines
+    cursorStrength: 3.5,   // Impulse strength (high for dramatic stretch)
+    velocityScale: 0.35,   // Velocity to impulse conversion (high for big deformation)
+    pointerLerp: 0.2,      // Pointer smoothing (0.15-0.25 for premium feel)
     cursorXScale: 0.3,     // Horizontal cursor displacement scale
-    maxCursorMoveY: 20,    // Max cursor Y offset (0.8 * yGap = 20)
+    maxCursorMoveY: 45,    // Max cursor Y offset (increased for bigger push)
 
-    // Physics
-    tension: 0.03,         // Spring restoration force
-    friction: 0.82,        // Velocity damping (reduced for smoother motion)
+    // Physics (under-damped spring for bounce)
+    tension: 0.035,        // Spring restoration force (slightly lower for bigger push before bounce)
+    friction: 0.88,        // Velocity damping (higher = less damping, more overshoot)
 
     // Audio Reactivity
     audioReactivityEnabled: true,
@@ -52,10 +53,12 @@
     cols: 0
   };
 
-  // Pointer tracking
+  // Pointer tracking (smoothed for premium feel)
   const pointer = {
     x: 0,
     y: 0,
+    prevX: 0,
+    prevY: 0,
     velocityX: 0,
     velocityY: 0,
     isActive: false
@@ -115,6 +118,9 @@
     // Increment time
     time += deltaTime * 0.001;
 
+    // Normalize deltaTime for stable physics (clamp to avoid frame spikes)
+    const dtSeconds = Math.max(1/120, Math.min(1/30, deltaTime / 1000));
+
     // Get audio energy for amplitude modulation
     let audioEnergy = 0;
     if (config.audioReactivityEnabled && typeof window.getAudioEnergy === 'function') {
@@ -143,58 +149,50 @@
       const waveY = Math.sin(t) * currentWaveAmpY;
 
       // ===== CURSOR VELOCITY INJECTION =====
+      // Directional velocity-based push: only affect points in front of cursor (like finger through water)
       if (pointer.isActive) {
         const dx = x - pointer.x;
         const dy = y - pointer.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
-        if (distance < config.influenceRadius && distance > 0) {
-          // Normalize direction from cursor to point
-          const dirX = dx / distance;
-          const dirY = dy / distance;
+        // Calculate cursor velocity magnitude for directional filtering
+        const velMag = Math.sqrt(pointer.velocityX * pointer.velocityX + pointer.velocityY * pointer.velocityY);
 
-          // Normalize velocity direction
-          const velocityMag = Math.sqrt(pointer.velocityX * pointer.velocityX + pointer.velocityY * pointer.velocityY);
+        if (distance < config.influenceRadius) {
+          // Check if point is in front of cursor using dot product
+          const alignment = (dx * pointer.velocityX + dy * pointer.velocityY) / (velMag || 1);
 
-          if (velocityMag > 0.1) {  // Only apply if cursor is actually moving
-            const velDirX = pointer.velocityX / velocityMag;
-            const velDirY = pointer.velocityY / velocityMag;
+          // Smooth directional falloff with minimum distance to prevent spikes on closest wave
+          const minDist = Math.max(distance, config.yGap * 0.5);  // Prevent division by very small numbers
+          const alignmentFactor = Math.max(0, alignment / minDist);
 
-            // Dot product: how much is the point in the direction of movement?
-            const alignment = dirX * velDirX + dirY * velDirY;
+          // Smooth squared falloff (cue++ feel)
+          const normalizedDist = distance / config.influenceRadius;
+          const falloff = Math.pow(1 - normalizedDist, 2);
 
-            // Only push points ahead of the cursor (positive alignment)
-            if (alignment > 0) {
-              // Distance falloff (smooth)
-              const normalizedDist = distance / config.influenceRadius;
-              const falloff = 1 - (normalizedDist * normalizedDist);
+          // Combine radial and directional falloff for smooth gradient
+          const directionalFalloff = falloff * alignmentFactor;
 
-              // Directional strength: stronger for points directly in path
-              const directionalStrength = alignment * alignment;  // Square for sharper focus
-
-              // Combined impulse
-              const impulse = falloff * directionalStrength * config.cursorStrength * velocityMag * 0.3;
-
-              // Push in the direction of movement
-              point.cvx += velDirX * impulse;
-              point.cvy += velDirY * impulse;
-            }
-          }
+          // Inject pointer velocity into point velocity (not position-based attraction)
+          const impulse = directionalFalloff * config.cursorStrength;
+          point.cvx += pointer.velocityX * impulse * config.velocityScale;
+          point.cvy += pointer.velocityY * impulse * config.velocityScale;
         }
       }
 
-      // ===== SPRING + FRICTION =====
+      // ===== SPRING + FRICTION (under-damped for bounce) =====
       // Spring pulls cursor offset back to zero
       point.cvx += (-point.cx) * config.tension;
       point.cvy += (-point.cy) * config.tension;
 
-      // Friction
+      // Friction (higher value = less damping = more overshoot/bounce)
       point.cvx *= config.friction;
       point.cvy *= config.friction;
 
-      // Integrate
-      point.cx += point.cvx;
-      point.cy += point.cvy;
+      // Integrate with frame-rate independence
+      const dtScale = dtSeconds * 60;  // Normalize to 60fps baseline
+      point.cx += point.cvx * dtScale;
+      point.cy += point.cvy * dtScale;
 
       // ===== CLAMP CURSOR OFFSET =====
       const maxCursorMoveX = config.maxCursorMoveY; // Use same limit for X
@@ -257,13 +255,29 @@
   function initPointerTracking(canvasElement) {
     canvasElement.addEventListener('pointermove', (e) => {
       const rect = canvasElement.getBoundingClientRect();
-      const newX = e.clientX - rect.left;
-      const newY = e.clientY - rect.top;
+      const rawX = e.clientX - rect.left;
+      const rawY = e.clientY - rect.top;
 
-      pointer.velocityX = newX - pointer.x;
-      pointer.velocityY = newY - pointer.y;
-      pointer.x = newX;
-      pointer.y = newY;
+      // Store previous smoothed position for velocity calculation
+      pointer.prevX = pointer.x;
+      pointer.prevY = pointer.y;
+
+      // Smooth pointer position (lerp for premium feel)
+      pointer.x += (rawX - pointer.x) * config.pointerLerp;
+      pointer.y += (rawY - pointer.y) * config.pointerLerp;
+
+      // Calculate velocity from smoothed movement (px per frame)
+      pointer.velocityX = pointer.x - pointer.prevX;
+      pointer.velocityY = pointer.y - pointer.prevY;
+
+      // Clamp velocity to avoid spikes on dropped frames (max ~100px/frame)
+      const velMag = Math.sqrt(pointer.velocityX * pointer.velocityX + pointer.velocityY * pointer.velocityY);
+      if (velMag > 100) {
+        const scale = 100 / velMag;
+        pointer.velocityX *= scale;
+        pointer.velocityY *= scale;
+      }
+
       pointer.isActive = true;
     });
 
