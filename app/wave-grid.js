@@ -66,7 +66,7 @@
   const themes = {
     default: {
       background: '#0a0a0a',
-      lineColor: 'rgba(139, 76, 246, 0.3)'
+      lineColor: 'rgba(100, 100, 100, 0.25)'
     },
     classicfm: {
       background: '#1a0000',
