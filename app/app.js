@@ -18,7 +18,6 @@ const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
 // DOM elements
 const stationCards = document.querySelectorAll('.station-card');
-const brandBadge = document.getElementById('brandBadge');
 const tagline = document.getElementById('tagline');
 const stopBtn = document.getElementById('stopBtn');
 const customBtn = document.getElementById('customBtn');
@@ -101,7 +100,6 @@ playCustomBtn.addEventListener('click', () => {
     }
 
     stationCards.forEach(c => c.classList.remove('active'));
-    brandBadge.textContent = 'Custom Stream';
     logoContainer.innerHTML = '<div style="color: var(--text-primary); font-size: 40px; font-weight: 900;">CUSTOM</div>';
     tagline.textContent = 'Live Stream';
 
@@ -352,7 +350,6 @@ function stopStream() {
 
 // Update branding
 function updateBranding(stationId, name, stationTagline) {
-    brandBadge.textContent = name;
     tagline.textContent = stationTagline;
 
     if (stationId === 'classicfm') {
