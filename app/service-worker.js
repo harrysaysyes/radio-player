@@ -1,4 +1,4 @@
-const CACHE_NAME = 'radio-player-v3.6';
+const CACHE_NAME = 'radio-player-v3.7';
 const urlsToCache = [
   './',
   './radio-player.html',
