@@ -46,6 +46,14 @@ body.theme-reprezent {
     --border-color: rgba(255, 255, 255, 0.3);
 }
 
+/* Worldwide FM Theme */
+body.theme-worldwide {
+    background: linear-gradient(135deg, #0a1f0a 0%, #1a2f1a 30%, #0f1f0f 70%, #0a1f0a 100%);
+    --text-primary: #ffffff;
+    --text-secondary: #fbbf24;
+    --border-color: rgba(251, 191, 36, 0.3);
+}
+
 .player-container {
     background: rgba(20, 20, 20, 0.95);
     backdrop-filter: blur(30px) saturate(180%);
@@ -88,6 +96,17 @@ body.theme-reprezent .player-container {
     color: white;
 }
 
+body.theme-worldwide .player-container {
+    background: rgba(26, 47, 26, 0.95);
+    box-shadow:
+        0 30px 90px rgba(16, 185, 129, 0.4),
+        0 0 0 1px rgba(251, 191, 36, 0.3),
+        0 0 80px rgba(16, 185, 129, 0.45),
+        0 0 160px rgba(251, 191, 36, 0.35),
+        0 0 240px rgba(16, 185, 129, 0.25),
+        inset 0 1px 0 rgba(251, 191, 36, 0.1);
+}
+
 .header {
     text-align: center;
     margin-bottom: 40px;
@@ -116,6 +135,12 @@ body.theme-classicfm .logo-container {
 
 body.theme-reprezent .logo-container {
     background: rgba(31, 30, 30, 0.95);
+    border-radius: 12px;
+    padding: 12px 24px;
+}
+
+body.theme-worldwide .logo-container {
+    background: rgba(26, 47, 26, 0.95);
     border-radius: 12px;
     padding: 12px 24px;
 }
@@ -175,6 +200,18 @@ body.theme-reprezent .now-playing.playing {
     background: rgba(255, 255, 255, 0.15);
     border-color: rgba(255, 255, 255, 0.4);
     box-shadow: 0 8px 32px rgba(255, 255, 255, 0.2);
+}
+
+body.theme-worldwide .now-playing {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(251, 191, 36, 0.3);
+    color: #ffffff;
+}
+
+body.theme-worldwide .now-playing.playing {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: rgba(251, 191, 36, 0.5);
+    box-shadow: 0 8px 32px rgba(16, 185, 129, 0.3);
 }
 
 .now-playing-label {
@@ -289,6 +326,27 @@ body.theme-reprezent .station-card[data-station="reprezent"].active::before {
     background: linear-gradient(90deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.4));
 }
 
+body.theme-worldwide .station-card[data-station="worldwide"] {
+    border-color: rgba(251, 191, 36, 0.3);
+    background: rgba(16, 185, 129, 0.1);
+}
+
+body.theme-worldwide .station-card[data-station="worldwide"]:hover {
+    border-color: rgba(251, 191, 36, 0.5);
+    background: rgba(16, 185, 129, 0.15);
+    box-shadow: 0 12px 40px rgba(16, 185, 129, 0.3);
+}
+
+body.theme-worldwide .station-card[data-station="worldwide"].active {
+    border-color: rgba(251, 191, 36, 0.6);
+    background: rgba(16, 185, 129, 0.2);
+    box-shadow: 0 12px 40px rgba(16, 185, 129, 0.4);
+}
+
+body.theme-worldwide .station-card[data-station="worldwide"].active::before {
+    background: linear-gradient(90deg, rgba(251, 191, 36, 0.8), rgba(16, 185, 129, 0.6));
+}
+
 .station-title {
     font-size: 18px;
     font-weight: 700;
@@ -372,6 +430,22 @@ body.theme-reprezent .custom-btn.active {
     background: rgba(255, 255, 255, 0.15);
 }
 
+body.theme-worldwide .custom-btn {
+    border-color: rgba(251, 191, 36, 0.3);
+    background: rgba(16, 185, 129, 0.08);
+}
+
+body.theme-worldwide .custom-btn:hover {
+    border-color: rgba(251, 191, 36, 0.5);
+    background: rgba(16, 185, 129, 0.15);
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
+}
+
+body.theme-worldwide .custom-btn.active {
+    border-color: rgba(251, 191, 36, 0.5);
+    background: rgba(16, 185, 129, 0.15);
+}
+
 
 .status-bar {
     text-align: center;
@@ -407,6 +481,11 @@ body.theme-classicfm .status-bar.playing .status-dot {
 body.theme-reprezent .status-bar.playing .status-dot {
     background: #ffffff;
     box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+}
+
+body.theme-worldwide .status-bar.playing .status-dot {
+    background: #fbbf24;
+    box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
 }
 
 @keyframes pulse-dot {

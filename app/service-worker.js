@@ -1,4 +1,4 @@
-const CACHE_NAME = 'radio-player-v3.7';
+const CACHE_NAME = 'radio-player-v3.8';
 const urlsToCache = [
   './',
   './radio-player.html',
@@ -41,7 +41,8 @@ self.addEventListener('fetch', (event) => {
   // Don't cache audio streams
   if (event.request.url.includes('.mp3') ||
       event.request.url.includes('radio.canstream') ||
-      event.request.url.includes('musicradio.com')) {
+      event.request.url.includes('musicradio.com') ||
+      event.request.url.includes('radiocult.fm')) {
     return;
   }
 

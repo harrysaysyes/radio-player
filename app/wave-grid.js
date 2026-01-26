@@ -75,6 +75,10 @@
     reprezent: {
       background: '#0a0a0a',
       lineColor: 'rgba(255, 255, 255, 0.25)'
+    },
+    worldwide: {
+      background: '#1a2f1a',
+      lineColor: 'rgba(251, 191, 36, 0.4)'
     }
   };
 

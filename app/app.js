@@ -80,10 +80,6 @@ stationCards.forEach(card => {
 
         // Play station with fallback
         playStream(url, urlAlt);
-
-        // Hide custom stream
-        customStream.classList.remove('visible');
-        customBtn.classList.remove('active');
     });
 });
 
@@ -93,7 +89,7 @@ stationCards.forEach(card => {
 // ============================================================================
 
 // Play stream
-function playStream(url, urlAlt = null) {
+async function playStream(url, urlAlt = null) {
     if (audio) {
         audio.pause();
         audio = null;
@@ -114,31 +110,27 @@ function playStream(url, urlAlt = null) {
     audio = new Audio(url);
     audio.crossOrigin = "anonymous";  // Required for Web Audio API with CORS
 
-    // Setup Web Audio API for audio reactivity
-    if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        analyserNode = audioContext.createAnalyser();
-        analyserNode.fftSize = 256;
-        analyserNode.smoothingTimeConstant = 0.8;
-        frequencyData = new Uint8Array(analyserNode.frequencyBinCount);
-    }
-
-    // Connect audio element to analyser
-    // Note: sourceNode was reset to null above, so we always create a fresh connection
-    if (audio) {
-        try {
-            sourceNode = audioContext.createMediaElementSource(audio);
-            sourceNode.connect(analyserNode);
-            analyserNode.connect(audioContext.destination);
-            console.log('✓ Web Audio API connected successfully - audio reactivity enabled');
-        } catch (err) {
-            console.error('✗ Web Audio API connection failed:', err.message);
-            console.error('  This may be due to:');
-            console.error('  - CORS restrictions (stream must allow cross-origin access)');
-            console.error('  - Audio element already connected to another source');
-            console.error('  Audio reactivity will be disabled for this stream.');
-            sourceNode = null;  // Reset to allow retry on next stream
+    // Try to setup Web Audio API for audio reactivity
+    try {
+        // Create AudioContext if needed
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyserNode = audioContext.createAnalyser();
+            analyserNode.fftSize = 256;
+            analyserNode.smoothingTimeConstant = 0.8;
+            frequencyData = new Uint8Array(analyserNode.frequencyBinCount);
         }
+
+        // Connect audio element to analyser (can only be done once per audio element)
+        sourceNode = audioContext.createMediaElementSource(audio);
+        sourceNode.connect(analyserNode);
+        analyserNode.connect(audioContext.destination);
+        console.log('✓ Web Audio API connected successfully - audio reactivity enabled');
+    } catch (err) {
+        console.error('✗ Web Audio API connection failed:', err.message);
+        console.error('  Audio will play normally without wave reactivity');
+        sourceNode = null;
+        // If Web Audio API fails, audio plays through normal browser output
     }
 
     // Validate audio reactivity is working (for debugging)
@@ -292,8 +284,15 @@ function playStream(url, urlAlt = null) {
     updateStatus('Connecting...', true);
 
     // Resume audio context if suspended (iOS requirement)
-    if (audioContext && audioContext.state === 'suspended') {
-        audioContext.resume();
+    if (audioContext) {
+        console.log('AudioContext state:', audioContext.state);
+        if (audioContext.state === 'suspended') {
+            console.log('Resuming suspended AudioContext...');
+            await audioContext.resume().catch(err => {
+                console.warn('AudioContext resume failed:', err);
+            });
+            console.log('AudioContext state after resume:', audioContext.state);
+        }
     }
 
     audio.play().catch((err) => {
@@ -335,6 +334,8 @@ function updateBranding(stationId, name, stationTagline) {
         logoContainer.innerHTML = '<img src="./assets/logos/classicfm.svg" alt="Classic FM" style="max-height:80px;max-width:100%;object-fit:contain;">';
     } else if (stationId === 'reprezent') {
         logoContainer.innerHTML = '<img src="./assets/logos/reprezent.jpg" alt="Reprezent 107.3 FM" style="max-height:80px;max-width:100%;object-fit:contain;">';
+    } else if (stationId === 'worldwide') {
+        logoContainer.innerHTML = '<div style="color: var(--text-primary); font-size: 36px; font-weight: 900;">WORLDWIDE FM</div>';
     }
 }
 
@@ -405,6 +406,11 @@ async function fetchReprezentNowPlaying() {
     updateNowPlaying('Live on Reprezent', 'Voice of Young London');
 }
 
+async function fetchWorldwideFMNowPlaying() {
+    // Static metadata - Worldwide FM stream metadata requires special handling
+    updateNowPlaying('Live on Worldwide FM', 'Gilles Peterson & Friends');
+}
+
 function startMetadataUpdates() {
     if (metadataInterval) {
         clearInterval(metadataInterval);
@@ -426,6 +432,8 @@ function fetchNowPlaying() {
         fetchClassicFMNowPlaying();
     } else if (currentStationId === 'reprezent') {
         fetchReprezentNowPlaying();
+    } else if (currentStationId === 'worldwide') {
+        fetchWorldwideFMNowPlaying();
     }
 }
 
