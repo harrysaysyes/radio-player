@@ -19,7 +19,6 @@ const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 // DOM elements
 const stationCards = document.querySelectorAll('.station-card');
 const tagline = document.getElementById('tagline');
-const stopBtn = document.getElementById('stopBtn');
 const customBtn = document.getElementById('customBtn');
 const customStream = document.getElementById('customStream');
 const customStreamInput = document.getElementById('customStreamInput');
@@ -39,6 +38,27 @@ const logoContainer = document.getElementById('logoContainer');
 stationCards.forEach(card => {
     card.addEventListener('click', () => {
         const stationId = card.getAttribute('data-station');
+
+        // TOGGLE LOGIC - If clicking active card, stop playback
+        if (card.classList.contains('active')) {
+            // Clicking active card stops playback
+            stopStream();
+            card.classList.remove('active');
+
+            // Reset branding to default "Radio 3"
+            document.body.className = 'no-selection';
+            logoContainer.innerHTML = '<div style="color: var(--text-primary); font-size: 40px; font-weight: 900;">Radio 3</div>';
+            tagline.textContent = 'Select a station to begin';
+
+            // Update canvas animation to default theme
+            if (window.waveGrid) {
+                window.waveGrid.setTheme('default');
+            }
+
+            return;
+        }
+
+        // Otherwise, start playback
         const url = card.getAttribute('data-url');
         const urlAlt = card.getAttribute('data-url-alt');
         const name = card.getAttribute('data-name');
@@ -69,11 +89,6 @@ stationCards.forEach(card => {
         customStream.classList.remove('visible');
         customBtn.classList.remove('active');
     });
-});
-
-// Stop button
-stopBtn.addEventListener('click', () => {
-    stopStream();
 });
 
 // Custom stream toggle
@@ -177,7 +192,6 @@ function playStream(url, urlAlt = null) {
 
     audio.addEventListener('playing', () => {
         updateStatus('Streaming live', true);
-        stopBtn.disabled = false;
 
         // Prevent screen sleep
         requestWakeLock();
@@ -249,7 +263,6 @@ function playStream(url, urlAlt = null) {
             // Re-attach event listeners for the new audio element
             audio.addEventListener('playing', () => {
                 updateStatus('Streaming live', true);
-                stopBtn.disabled = false;
                 requestWakeLock();
 
                 if (currentStationId) {
@@ -281,7 +294,6 @@ function playStream(url, urlAlt = null) {
                 stopMetadataUpdates();
                 updateStatus('Connection error - Stream may be offline');
                 updateNowPlaying('Error', 'Unable to connect to stream');
-                stopBtn.disabled = true;
                 if ('mediaSession' in navigator) {
                     navigator.mediaSession.playbackState = 'none';
                 }
@@ -295,13 +307,11 @@ function playStream(url, urlAlt = null) {
                 console.error('Alternative stream failed:', err);
                 stopMetadataUpdates();
                 updateStatus('Both streams failed');
-                stopBtn.disabled = true;
             });
         } else {
             stopMetadataUpdates();
             updateStatus('Connection error - Stream may be offline');
             updateNowPlaying('Error', 'Unable to connect to stream');
-            stopBtn.disabled = true;
             if ('mediaSession' in navigator) {
                 navigator.mediaSession.playbackState = 'none';
             }
@@ -336,7 +346,9 @@ function stopStream() {
     releaseWakeLock();
     updateStatus('Stopped');
     updateNowPlaying('Stopped', 'Select a station to play');
-    stopBtn.disabled = true;
+
+    // Remove active class from all station cards
+    stationCards.forEach(c => c.classList.remove('active'));
 
     // Update CarPlay/lock screen state
     if ('mediaSession' in navigator) {
