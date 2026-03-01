@@ -18,8 +18,6 @@ const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
 // DOM elements
 const tagline = document.getElementById('tagline');
-const statusBar = document.getElementById('statusBar');
-const statusText = document.getElementById('statusText');
 const nowPlaying = document.getElementById('nowPlaying');
 const trackInfo = document.getElementById('trackInfo');
 const trackArtist = document.getElementById('trackArtist');
@@ -149,10 +147,10 @@ function handleCardClick(e) {
     // TOGGLE LOGIC - clicking active card stops playback
     if (card.classList.contains('active')) {
         stopStream();
-        card.classList.remove('active');
         document.body.className = 'no-selection';
         logoContainer.innerHTML = '<div style="color: var(--text-primary); font-size: 40px; font-weight: 900;">Minify Radio</div>';
         tagline.textContent = 'Select a station to begin';
+        updateNowPlaying('Select a station to begin', '');
         if (window.waveGrid) window.waveGrid.setTheme('default');
         return;
     }
@@ -225,12 +223,6 @@ function updateBranding(station) {
     }
 }
 
-function updateStatus(message, isPlaying = false) {
-    statusText.textContent = message;
-    statusBar.className = 'status-bar';
-    if (isPlaying) statusBar.classList.add('playing');
-}
-
 function updateNowPlaying(title, artist) {
     trackInfo.textContent = title;
     trackArtist.textContent = artist || '';
@@ -292,7 +284,6 @@ async function playStream(url, urlAlt = null) {
     let hasTriedAlt = false;
 
     audio.addEventListener('playing', () => {
-        updateStatus('Streaming live', true);
         requestWakeLock();
         if (currentStationId) {
             startMetadataUpdates();
@@ -315,7 +306,6 @@ async function playStream(url, urlAlt = null) {
         console.error('Stream error:', e, 'URL:', url);
         if (urlAlt && !hasTriedAlt) {
             hasTriedAlt = true;
-            updateStatus('Trying alternative stream...', true);
             if (sourceNode) { try { sourceNode.disconnect(); } catch(e){} sourceNode = null; }
 
             audio = new Audio(urlAlt);
@@ -330,7 +320,6 @@ async function playStream(url, urlAlt = null) {
             }
 
             audio.addEventListener('playing', () => {
-                updateStatus('Streaming live', true);
                 requestWakeLock();
                 if (currentStationId) startMetadataUpdates();
                 else updateNowPlaying('Live Stream', currentStationName);
@@ -341,23 +330,21 @@ async function playStream(url, urlAlt = null) {
             audio.addEventListener('ended', () => { if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'none'; });
             audio.addEventListener('error', () => {
                 stopMetadataUpdates();
-                updateStatus('Connection error - Stream may be offline');
-                updateNowPlaying('Error', 'Unable to connect to stream');
+                updateNowPlaying('Connection error', 'Stream may be offline');
                 if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'none';
             });
-            audio.addEventListener('waiting', () => { updateStatus('Buffering...', true); });
-            audio.play().catch(err => { console.error('Alternative stream failed:', err); updateStatus('Both streams failed'); });
+            audio.addEventListener('waiting', () => { updateNowPlaying('Buffering…', ''); });
+            audio.play().catch(err => { console.error('Alternative stream failed:', err); updateNowPlaying('Connection error', 'Stream may be offline'); });
         } else {
             stopMetadataUpdates();
-            updateStatus('Connection error - Stream may be offline');
-            updateNowPlaying('Error', 'Unable to connect to stream');
+            updateNowPlaying('Connection error', 'Stream may be offline');
             if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'none';
         }
     });
 
-    audio.addEventListener('waiting', () => { updateStatus('Buffering...', true); });
+    audio.addEventListener('waiting', () => { updateNowPlaying('Buffering…', ''); });
 
-    updateStatus('Connecting...', true);
+    updateNowPlaying('Connecting…', '');
 
     if (audioContext) {
         console.log('AudioContext state:', audioContext.state);
@@ -376,8 +363,6 @@ function stopStream() {
     }
     stopMetadataUpdates();
     releaseWakeLock();
-    updateStatus('Stopped');
-    updateNowPlaying('Stopped', 'Select a station to play');
     stationGrid.querySelectorAll('.station-card').forEach(c => c.classList.remove('active'));
     if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'none';
 }
@@ -437,41 +422,40 @@ function fetchNowPlaying() {
 // ============================================================================
 
 let targetSlotIndex = 0;
-let selectedSearchResult = null;
-let selectedColor = '#6b7280';
 let searchDebounceTimer = null;
 
 const modal = document.getElementById('stationModal');
 const stationSearch = document.getElementById('stationSearch');
 const searchResults = document.getElementById('searchResults');
-const colorPicker = document.getElementById('colorPicker');
-const saveBtn = document.getElementById('saveStation');
 const modalCloseBtn = document.getElementById('modalClose');
-const swatches = document.querySelectorAll('.swatch');
 
 const SEARCH_HINT_HTML = '<div class="search-hint">Search by name, genre or country</div>';
 
+// Convert HSL to hex for auto-theming stations
+function hslToHex(h, s, l) {
+    s /= 100; l /= 100;
+    const a = s * Math.min(l, 1 - l);
+    const f = n => {
+        const k = (n + h / 30) % 12;
+        const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+        return Math.round(255 * color).toString(16).padStart(2, '0');
+    };
+    return `#${f(0)}${f(8)}${f(4)}`;
+}
+
 function openModal(slotIndex) {
     targetSlotIndex = slotIndex;
-    selectedSearchResult = null;
-    selectedColor = '#6b7280';
     stationSearch.value = '';
     searchResults.innerHTML = SEARCH_HINT_HTML;
-    colorPicker.classList.add('hidden');
-    swatches.forEach(s => s.classList.remove('selected'));
-    swatches[0].classList.add('selected');
     modal.classList.add('open');
     setTimeout(() => stationSearch.focus(), 350);
 }
 
 function closeModal() {
     modal.classList.remove('open');
-    // Clear after slide-out animation
     setTimeout(() => {
         stationSearch.value = '';
         searchResults.innerHTML = SEARCH_HINT_HTML;
-        colorPicker.classList.add('hidden');
-        selectedSearchResult = null;
     }, 350);
 }
 
@@ -484,8 +468,6 @@ document.addEventListener('keydown', (e) => {
 stationSearch.addEventListener('input', () => {
     const query = stationSearch.value.trim();
     clearTimeout(searchDebounceTimer);
-    colorPicker.classList.add('hidden');
-    selectedSearchResult = null;
 
     if (query.length < 2) {
         searchResults.innerHTML = SEARCH_HINT_HTML;
@@ -535,8 +517,7 @@ function renderSearchResults(results) {
 
         const hue = stationHue(station.name);
         const initials = stationInitials(station.name);
-        const meta = [station.country, station.tags ? station.tags.split(',')[0] : '', station.bitrate ? station.bitrate + 'kbps' : '']
-            .filter(Boolean).join(' · ');
+        const meta = station.country || '';
 
         item.innerHTML = `
             <div class="result-icon" style="background:hsl(${hue},45%,28%)">
@@ -555,42 +536,25 @@ function renderSearchResults(results) {
 }
 
 function selectSearchResult(itemEl, station) {
-    searchResults.querySelectorAll('.result-item').forEach(el => el.classList.remove('selected'));
-    itemEl.classList.add('selected');
-    selectedSearchResult = station;
-    colorPicker.classList.remove('hidden');
-}
+    // Auto-derive wave colour from the same hue used for the station icon
+    const themeColor = hslToHex(stationHue(station.name), 55, 55);
 
-// Swatch selection
-swatches.forEach(swatch => {
-    swatch.addEventListener('click', () => {
-        swatches.forEach(s => s.classList.remove('selected'));
-        swatch.classList.add('selected');
-        selectedColor = swatch.dataset.color;
-    });
-});
-
-// Save station
-saveBtn.addEventListener('click', () => {
-    if (!selectedSearchResult) return;
-
-    const station = selectedSearchResult;
     const newStation = {
         slotIndex: targetSlotIndex,
         id: 'custom_' + Date.now(),
         name: station.name,
         url: station.url_resolved || station.url,
-        tagline: (station.tags ? station.tags.split(',')[0] : '') || station.country || '',
+        tagline: station.country || (station.tags ? station.tags.split(',')[0] : '') || '',
         logoUrl: station.favicon || null,
         isDefault: false,
-        themeColor: selectedColor
+        themeColor
     };
 
     stations[targetSlotIndex] = newStation;
     saveStations(stations);
     renderStations(stations);
     closeModal();
-});
+}
 
 // ============================================================================
 // Media Session API (CarPlay & Lock Screen Controls)
