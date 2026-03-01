@@ -537,7 +537,7 @@ function renderSearchResults(results) {
 
 function selectSearchResult(itemEl, station) {
     // Auto-derive wave colour from the same hue used for the station icon
-    const themeColor = hslToHex(stationHue(station.name), 55, 55);
+    const themeColor = hslToHex(stationHue(station.name), 70, 50);
 
     const newStation = {
         slotIndex: targetSlotIndex,
@@ -677,6 +677,34 @@ if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./service-worker.js')
             .then(registration => console.log('Service Worker registered:', registration))
             .catch(error => console.log('Service Worker registration failed:', error));
+    });
+}
+
+// ============================================================================
+// Wave Canvas — tap/click to rotate colour
+// ============================================================================
+
+const WAVE_PALETTE = [0, 60, 120, 180, 240, 300].map(h => hslToHex(h, 70, 50));
+let paletteIndex = 0;
+
+const bgCanvas = document.getElementById('backgroundCanvas');
+if (bgCanvas) {
+    bgCanvas.addEventListener('click', () => {
+        paletteIndex = (paletteIndex + 1) % WAVE_PALETTE.length;
+        const color = WAVE_PALETTE[paletteIndex];
+        const rgb = hexToRgbComponents(color);
+        document.documentElement.style.setProperty('--custom-color', color);
+        document.documentElement.style.setProperty('--custom-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+        if (window.waveGrid) window.waveGrid.setDynamicTheme(color);
+        // If idle (no active station), apply custom body class for glow
+        const activeCard = stationGrid.querySelector('.station-card.active');
+        if (!activeCard) document.body.className = 'theme-custom';
+        // If a custom station is active, persist the new colour
+        if (activeCard && !stations[parseInt(activeCard.dataset.slotIndex, 10)]?.isDefault) {
+            const idx = parseInt(activeCard.dataset.slotIndex, 10);
+            stations[idx].themeColor = color;
+            saveStations(stations);
+        }
     });
 }
 
